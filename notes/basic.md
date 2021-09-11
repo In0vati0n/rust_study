@@ -52,6 +52,7 @@ const MAX_POINT: u32 = 100_000;
 Integer Literals in Rust:
 
 |Number literals|Example|
+|:---|:---|
 |Decimal|98_222|
 |Hex|0xff|
 |Octal|0o77|
