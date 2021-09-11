@@ -113,3 +113,39 @@ let a = [3; 5]; // ==> let a = [3, 3, 3, 3, 3];
 let first = a[0];
 let second = a[1];
 ```
+
+## Functions
+
+- Rust code uses *snake* case as the conventional style for function and variable names.
+- Rust doesn't care about where you define your functions, only that they're defined somewhere.
+- **Must** declare the type of each parameter.
+
+### Expression and Statement
+
+- Rust is an **expression-based** language.
+- *Statements* are instructions that perform some action and do not return a value.
+- *Expressions* evaluate to a resulting value.
+- Calling a function is an expression. Calling a macro is an expression. The block that we use to create new scopes, `{}`, is an expression.
+
+    ```rust
+    fn main() {
+        let x = 5;
+
+        let y = {
+            let x = 3;
+            x + 1 // without a semicolon
+        };
+    }
+    ```
+
+### Functions with Return Values
+
+- In Rust, the return value of the function is synonymous with the value of the final expression in the block of the body of a function.
+- Use `return` keyword and specifying s value to return early from a expression.
+
+    ```rust
+    fn five() {
+        5
+    }
+    ```
+
