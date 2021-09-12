@@ -178,5 +178,48 @@ let number = if condition { 5 } else { 6 };
 ### Loops
 
 - `loop`
+
+    ```rust
+    loop {
+        println!("again!");
+    }
+    ```
+
 - `while`
+
+    ```rust
+    let mut n = 3;
+    while n != 0 {
+        println!("{}!", n);
+        n -= 1;
+    }
+    ```
+
 - `for`
+
+    ```rust
+    let a = [10, 20, 30, 40, 50];
+    for element in a.iter() {
+        println!("the value is: {}", element);
+    }
+    ```
+    
+    *Faster than `while` version, beacaure it won't check index every iteration.*
+    
+    ```rust
+    for number in (1..4).rev() {
+        println!("{}!", number);
+    }
+    ```
+
+#### Returing Values from Loops
+
+```rust
+let result = loop {
+    counter += 1;
+    if counter == 10 {
+        break counter * 2;
+    }
+};
+```
+
