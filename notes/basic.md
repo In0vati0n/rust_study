@@ -149,3 +149,34 @@ let second = a[1];
     }
     ```
 
+## Control Flow
+
+### `if` Expression
+
+- Condition must be a bool. If the condition isn't a bool, we'll get an error.
+- RUst will not automatically try to convert non-Boolean types to a Boolean.
+
+```rust
+fn main() {
+    let number = 3;
+
+    if number < 5 {
+        println!("condition wae true");
+    } else {
+        println!("condition wae false");
+    }
+}
+```
+
+#### Using `if` in a let Statement
+
+```rust
+let condition = true;
+let number = if condition { 5 } else { 6 };
+```
+
+### Loops
+
+- `loop`
+- `while`
+- `for`
