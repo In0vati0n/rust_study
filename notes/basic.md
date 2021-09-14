@@ -204,7 +204,7 @@ let number = if condition { 5 } else { 6 };
     }
     ```
     
-    *Faster than `while` version, beacaure it won't check index every iteration.*
+    *Faster than `while` version, becaure it won't check index every iteration.*
     
     ```rust
     for number in (1..4).rev() {
@@ -221,5 +221,177 @@ let result = loop {
         break counter * 2;
     }
 };
+```
+
+## Ownership
+
+### Ownership Rules
+
+- Each value in Rust has a variable that's called its owner.
+- There can only be one owner at a time.
+- When the owner goes out of scope, the value will be dropped.
+
+- When variable goes out of scop, Rust calls a special function for us, called `drop`.
+
+### Ways Variables and Data Interact: Move
+
+- copy only stack memory
+- Rust will never automatically create "deep" copies of your data.
+
+```rust
+let s1 = String::from("hello");
+let s2 = s1; // move
+
+// println!("{}", s1); // error! s1 is no longer valid
+println!("{}", s2); // ok
+```
+
+### Ways Variables and Data Interact: Clone
+
+- copy both stack and heap memory
+
+```rust
+let s1 = String::from("hello");
+let s2 = s1.clone(); // clone
+
+println!("s1 = {}, s2 = {}", s1, s2);
+```
+
+### Stack-Only Data: Copy
+
+- Rust won't let us annotate a type with the **Copy trait** if the type, or any of its parts, has implemented the **Drop trait**.
+- Here are some of the types that implement Copy:
+
+    - All the integer types, such as u32.
+    - The Boolean type, bool, with values true and false.
+    - All the floating point types, such as f64.
+    - The character type, char.
+    - Tuples, if they **only** contain types that also implement Copy.
+    
+### Ownership and Functions
+
+- Passing a variable to a function will move or copy, just as assignment does.
+
+```rust
+fn main() {
+    let s = String::from("hello"); // s comes in scope
+
+    takes_ownership(s); // s's value moves into the function
+                        // and so is no longer valid here
+
+    let x = 5;          // x comes into scope
+
+    makes_copy(x);      // x would move into the function
+                        // but i32 is Copy, so it's okay to still use x afterward
+}
+
+fn takes_ownership(some_string: String) { // some_string comes into scope
+    println!("{}", some_string);
+} // Here, some_string goes out of scope and `drop` is called. The backing memory is freed.
+
+fn makes_coy(some_integer: i32) { // some_integer comes into scope
+    println!("{}", some_integer);
+} // Here, some_integer goe out of scope. Nothing special happens.
+```
+
+### Return Values and Scope
+
+- The ownership of a variable follows the same pattern everty time: assigning a value to another variable moves it. When a variable that includes data on the heap goes out of scope, the value will be cleaned up by drop unless the data has been moved to be owned by another variable.
+
+```rust
+fn main() {
+    let s1 = gives_ownership(); // gives_ownership moves its return value into s1
+    
+    let s2 = String::from("hello"); // s2 comes into scope
+    
+    let s3 = takes_and_gives_back(s2); // s2 is moved into takes_and_gives_back,
+                                       // which also moves its return value into s3 
+} // Here, s3 goes out of scope and is dropped. s2 goes out of scope but was moved,
+// so nothing happens. s1 goes out of scope and is dropped.
+
+fn gives_ownership() -> String { // gives_ownership will move its return value into
+                                 // the function that calls it
+    
+    let some_string = String::from("hello"); // some_string come into scope
+    
+    some_string // some_string is returned and moves out to the calling function
+}
+
+// takes_and_gives_back will take a String and return one
+fn takes_and_gives_back(a_string: String) -> String { // a_string comes into scope
+    a_string // a_string is returned and moves out to the calling function
+}
+```
+### References and Borrowing
+
+- Reference parameter will not be dropped when it goes out of scope, because we don't have ownership.
+- Call having references as function parameters borrowing.
+- Just as variables are immutable by default, so are references. We're not allowed to modify something we have a reference to.
+
+```rust
+fn main() {
+    let s1 = String::from("hello");
+    
+    let len = calculate_length(&s1);
+    
+    println!("The length of '{}' is {}.", s1, len);
+}
+
+fn calculate_length(s: &String) -> usize {
+    s.len()
+}
+```
+
+### Mutable References
+
+- You can have **only one** mutable reference to a particular piecee of data in a particular scope. (prevent data races at compile time)
+
+```rust
+fn main() {
+    let mut s = String::from("hello");
+    
+    change(&mut s);
+}
+
+fn change(some_string: &mut String) {
+    some_string.push_str(", world");
+}
+```
+
+- We can use curly brackets to create a new scope, allowing for multiple mutable references.
+
+```rust
+fn main() {
+    let mut s = String::from("hello");
+    
+    {
+        let r1 = &mut s;
+    } // r1 goes out of scope here, so we can make a new reference with no problems.
+    
+    let r2 = &mut s;
+}
+```
+
+- We also cannot have a mutable reference while we have an immutable one.
+- Multiple immutable references are okay.
+- A reference's scope starts from where it is introduced and continues through the last time that references is used.
+
+```rust
+fn main() {
+    let mut s = String::from("hello");
+    
+    let r1 = &s; // no problem
+    let r2 = &s; // no problem
+    
+    println!("{} and {}", r1, r2);
+    // variables r1 and r2 will not used after this point
+    
+    let r3 = &mut s; // no problem
+    println!("{}", r3);
+    
+    // println!("{}", r1); // error!
+    // mutable reference cannot be used while have an immutable 
+    // reference one
+}
 ```
 
