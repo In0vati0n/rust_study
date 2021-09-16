@@ -30,10 +30,10 @@ const MAX_POINT: u32 = 100_000;
 3. We can change the type of the value but reuse the same name.
 
 ## Data Types
-- Rust is a *statically typed* language.
+- Rust is a **statically typed** language.
 
 ### Scalar Types
-- A *scalar* type represents a single value.
+- A **scalar** type represents a single value.
 - Four primary scalar types: **integers**, **floating-point numbers**, **Booleans**, **characters**.
 
 #### Integer Types
@@ -123,8 +123,8 @@ let second = a[1];
 ### Expression and Statement
 
 - Rust is an **expression-based** language.
-- *Statements* are instructions that perform some action and do not return a value.
-- *Expressions* evaluate to a resulting value.
+- **Statements** are instructions that perform some action and do not return a value.
+- **Expressions** evaluate to a resulting value.
 - Calling a function is an expression. Calling a macro is an expression. The block that we use to create new scopes, `{}`, is an expression.
 
     ```rust
@@ -225,7 +225,8 @@ let result = loop {
 
 ## Ownership
 
-### Ownership Rules
+### Ownership
+#### Ownership Rules
 
 - Each value in Rust has a variable that's called its owner.
 - There can only be one owner at a time.
@@ -233,7 +234,7 @@ let result = loop {
 
 - When variable goes out of scop, Rust calls a special function for us, called `drop`.
 
-### Ways Variables and Data Interact: Move
+#### Ways Variables and Data Interact: Move
 
 - copy only stack memory
 - Rust will never automatically create "deep" copies of your data.
@@ -246,7 +247,7 @@ let s2 = s1; // move
 println!("{}", s2); // ok
 ```
 
-### Ways Variables and Data Interact: Clone
+#### Ways Variables and Data Interact: Clone
 
 - copy both stack and heap memory
 
@@ -257,7 +258,7 @@ let s2 = s1.clone(); // clone
 println!("s1 = {}, s2 = {}", s1, s2);
 ```
 
-### Stack-Only Data: Copy
+#### Stack-Only Data: Copy
 
 - Rust won't let us annotate a type with the **Copy trait** if the type, or any of its parts, has implemented the **Drop trait**.
 - Here are some of the types that implement Copy:
@@ -268,7 +269,7 @@ println!("s1 = {}, s2 = {}", s1, s2);
     - The character type, char.
     - Tuples, if they **only** contain types that also implement Copy.
     
-### Ownership and Functions
+#### Ownership and Functions
 
 - Passing a variable to a function will move or copy, just as assignment does.
 
@@ -294,7 +295,7 @@ fn makes_coy(some_integer: i32) { // some_integer comes into scope
 } // Here, some_integer goe out of scope. Nothing special happens.
 ```
 
-### Return Values and Scope
+#### Return Values and Scope
 
 - The ownership of a variable follows the same pattern everty time: assigning a value to another variable moves it. When a variable that includes data on the heap goes out of scope, the value will be cleaned up by drop unless the data has been moved to be owned by another variable.
 
@@ -342,7 +343,7 @@ fn calculate_length(s: &String) -> usize {
 }
 ```
 
-### Mutable References
+#### Mutable References
 
 - You can have **only one** mutable reference to a particular piecee of data in a particular scope. (prevent data races at compile time)
 
@@ -394,4 +395,27 @@ fn main() {
     // reference one
 }
 ```
+
+#### Dangling References
+
+- Compiler guarantees that references will never be dangling references: if you have a reference to some data, the compiler will ensure that the data will not go out of scope before the reference to the data does.
+
+### Slice
+
+- Slices let you reference a contiguous sequence of elements in a collection rather than the whole collection.
+
+#### String Slices
+
+- A **string slice** is a reference to part of a String.
+
+```rust
+fn main() {
+    let s = String::from("hello world");
+    let hello = &s[0..5]; // ==> let hello = &s[..5];
+    let world = &s[6..11]; // ==> let world = &s[6..];
+    let whole_string = &s[...];
+}
+```
+
+- String slice range indices must occur at valid UTF-8 character boundaries. If you attempt to create a string slice in the middle of a multibyte character, your program will exit with an error.
 
