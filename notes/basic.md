@@ -419,3 +419,96 @@ fn main() {
 
 - String slice range indices must occur at valid UTF-8 character boundaries. If you attempt to create a string slice in the middle of a multibyte character, your program will exit with an error.
 
+#### Other Slices
+
+- There's a more general slice type.
+
+```rust
+#![allow(unused)]
+fn main() {
+let a = [1, 2, 3, 4, 5];
+
+let slice = &a[1..3]; // type is &[i32]
+
+assert_eq!(slice, &[2, 3]);
+}
+
+```
+
+## Structs
+### Defening and Instantiating Structs
+
+- Basic define and use.
+
+    ```rust
+    struct User {
+        username: String,
+        email: String,
+        sign_in_count: u64,
+        active: bool,
+    }
+    
+    fn main() {
+        let user1 = User {
+            email: String::from("someone@example.com"),
+            username: String::from("someusername123"),
+            active: true,
+            sign_in_count: 1,
+        };
+    }
+    ```
+    
+- Using the Field Init Shorthand when variables and Fields have the same name.
+
+    ```rust
+    fn build_user(email: String, username: String) -> User {
+        User {
+            email,
+            username,
+            active: true,
+            sign_in_count: 1,
+        }
+    }
+    ```
+    
+- Creating instances from other instances with struct update syntax.
+
+    ```rust
+    fn main() {
+        let user1 = User {
+            email: String::from("someone@example.com"),
+            username: String::from("someusername123"),
+            active: true,
+            sign_in_count: 1,
+        };
+    
+        let user2 = User {
+            email: String::from("another@example.com"),
+            username: String::from("anotherusername567"),
+            ..user1
+        };
+    }
+    ```
+
+### Tuple Struct
+
+- Tuple structs have the added meaning the struct name provides but don’t have names associated with their fields; rather, they just have the types of the fields.
+
+```rust
+fn main() {
+    struct Color(i32, i32, i32);
+    struct Point(i32, i32, i32);
+    
+    let black = Color(0, 0, 0);
+    let origin = Point(0, 0, 0);
+}
+```
+
+### Unit-Like structs without any fields
+
+- These are called unit-like structs because they behave similarly to (), the unit type.
+
+### Method Syntax
+
+```rust
+```
