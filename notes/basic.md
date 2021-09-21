@@ -636,3 +636,75 @@ fn main() {
     }
 }
 ```
+## Managing Growing Projects with Packages, Crates and Modules
+
+- **Module System**:
+
+    - **Packages**: A Cargo feature that lets you build, test, and share crates
+    - **Crates**: A tree of modules that produces a library or executable
+    - **Modules** and **use**: Let you control the organization, scope and privacy of paths
+    - **Paths**: A way of naming an item, such as a struct, function or module
+
+### Packages and Crates
+
+- A **crate** is a binary or library.
+
+    - The *crate root* is a source file that the Rust compiler starts from and makes up the root module of your crate.
+    
+- A **package** is one or more crates that provide a set of functionality.
+
+    - A package contains a *Cargo.toml* file that describes how to build those crates.
+    
+    - A package can contain at most one library crate. It can contain as many library crates as you'd like, but it must contain as least one crate (either library or binary).
+    
+    - *src/main.rs*: the crate root of a binary crate with the same name as the package.
+
+    - *src/lib.rs*: the crate root of a library crate with the same name as the package.
+    
+    
+    - A package can have multiple binary crates by placing files in the *src/bin* directory: each file will be a separate binary crate.
+    
+### Modules
+
+- **Modules** 
+
+    1. let us organize code within a crate into groups for readability and easy reuse.
+    2. control the *privacy* of items, which whether an item can be used by outside code(*public*) or is an internal implementation detail and not available for outside use(*private*).
+    
+    
+- Define a module by starting with the `mod` keyword
+
+### Paths
+
+- A **Path** can take two forms:
+
+    - An *absolute path* starts from a crate root by using a crate name or a literal `crate`.
+    - A *relative path* starts from the current module and uses `self`, `super` or an identifier in the current module.
+    
+### Privacy
+
+- All items (functions, methods, structs, enums, modules, and constants) are **private** by default. Items in a parent module can't use the private items inside child modules, but items in child modules can use the items in their ancestor modules.
+
+### Making Structs and Enums Public
+
+- If we use `pub` before a struct definition, we make the struct public, but the struct's fields will still be private. We can make each field public or not on a case-by-case basis.
+
+- If we make an enum public, all of its variants are then public.
+
+### `use` keyword
+
+- We can bring a path into a scope once and then call the items in that path as if they're local items with the `use` keyword.
+
+- You can also bring an item into scope with `use` and a relative path.
+
+- Providing new names with the `as` keyword.
+
+- Re-exporting names with `pub use`
+
+- Using nested paths to clean up large `use` lists: `use std::io::{self, Write};`.
+
+- The glob operator: `use std::collections::*;`
+
+### Separating Modules into Different Files
+
+- Using a semicolon after `mod abc` rather than using a block tells Rust to load the contents of the module from another file with the same name as the module.
