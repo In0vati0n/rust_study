@@ -708,3 +708,140 @@ fn main() {
 ### Separating Modules into Different Files
 
 - Using a semicolon after `mod abc` rather than using a block tells Rust to load the contents of the module from another file with the same name as the module.
+
+## Common Collections
+
+- Unlike the built-in array and tuple types, the data these collections point to is stored on the **heap**, which means the amount of data dose not need to be known at compile time and can grow or shrink as the program runs.
+
+- Common collections
+
+    - A **vector** allows you to store a variable number of values next to each other.
+    - A **string** is a collection of characters.
+    - A **hash map** allows you to associate a value with a particular key.
+    
+### Vector
+
+- Vectors allow you to store more than one value in a single data structure that puts all the values next to each other in memory.
+
+- Vectors can only store values of the same type.
+
+```rust
+// ----- create a vector -----
+
+let v: Vec<i32> = Vec:new();
+
+let v = vec![1, 2, 3];
+
+// ----- updating a vector -----
+
+v.push(5);
+v.push(6);
+
+// ----- drop -----
+
+{
+    let v = vec![1, 2, 3, 4];
+    // do stuff with v
+} // <- v gose out of scope and is freed here
+
+// ----- get elements -----
+
+// index start at 0
+let third: &i32 = &v[2];
+
+match v.get(2) { // give Option<&i32>
+    Some(third) => println!("The third element is {}", third),
+    None => println!("There is no third element."),
+}
+
+// ----- iterating over the values in a vector -----
+
+let v = vec![100, 32, 57];
+for i in &v {
+    println!("{}", i);
+}
+
+let mut v = vec![100, 32, 57];
+for i in &mut v {
+    *i += 50;
+}
+
+// ----- using an enum to store multiple types -----
+
+enum SpreadsheetCell {
+    Int(i32),
+    Float(f64),
+    Text(String),
+}
+
+let row = vec![
+    SpreadsheetCell::Int(3),
+    SpreadsheetCell::Text(String::from("blue")),
+    SpreadsheetCell::Float(10.12),
+];
+```
+
+
+### String
+
+- Both `String` and string slices are UTF-8 encoded.
+
+```rust
+// ----- create a new string -----
+
+let mut s = String::new();
+
+let data = "initial contents";
+
+let s = data.to_string();
+
+let s = "initial contents".to_string();
+
+let s = String::from("initial contents");
+
+// ----- updating a string -----
+
+let mut s = String::from("foo");
+s.push_str("bar");
+
+let mut s1 = String:from("foo");
+let s2 = "bar";
+s1.push_str(s2);
+s1.push('l')
+
+let s1 = String::from("Hello, ");
+let s2 = String::from("world!");
+let s3 = s1 + &s2; // note s1 has been moved here and can no longer be used
+// + operator uses the add method
+
+let s1 = String::from("tic");
+let s2 = String::from("tac");
+let s3 = String::from("toe");
+
+let s = format!("{}-{}-{}", s1, s2, s3); // doesn't take ownership of any of its parameters
+
+for c in "नमस्ते".chars() {
+    println!("{}", c);
+}
+
+for b in "नमस्ते".bytes() {
+    println!("{}", b);
+}
+
+```
+
+### HashMap
+
+
+
+- Hash maps are homogeneous: all of the keys must have the same type, and all of the values must have the same type.
+
+```rust
+use std::collections::HashMap;
+
+let mut scores = HashMap::new();
+
+scores.insert(String::from("Blue"), 10);
+scores.insert(String::from("Yellow"), 50);
+```
+
