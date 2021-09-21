@@ -511,4 +511,20 @@ fn main() {
 ### Method Syntax
 
 ```rust
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+}
 ```
+
+### Assiciated Functions
+
+Another useful feature of impl blocks is that we’re allowed to define functions within impl blocks that don’t take self as a parameter.
+
+
