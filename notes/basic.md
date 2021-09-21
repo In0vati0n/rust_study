@@ -528,3 +528,111 @@ impl Rectangle {
 Another useful feature of impl blocks is that we’re allowed to define functions within impl blocks that don’t take self as a parameter.
 
 
+## Enums and Pattern Matching
+### Defining an Enum
+
+```rust
+enum IpAddrKind {
+    V4,
+    V6,
+}
+
+fn main() {
+    let four = IpAddrKind::V4;
+    let six = IpAddrKind::V6;
+
+    route(IpAddrKind::V4);
+    route(IpAddrKind::V6);
+
+    route(four);
+    route(six);
+}
+
+fn route(ip_kind: IpAddrKind) {}
+```
+
+### Defining an Enum with data
+
+```rust
+fn main() {
+    enum IpAddr {
+        V4(String),
+        V6(String),
+    }
+
+    let home = IpAddr::V4(String::from("127.0.0.1"));
+
+    let loopback = IpAddr::V6(String::from("::1"));
+}
+```
+
+- There’s another advantage to using an enum rather than a struct: each variant can have different types and amounts of associated data.
+
+```rust
+fn main() {
+    enum IpAddr {
+        V4(u8, u8, u8, u8),
+        V6(String),
+    }
+
+    let home = IpAddr::V4(127, 0, 0, 1);
+
+    let loopback = IpAddr::V6(String::from("::1"));
+}
+```
+
+- Option Enum
+
+```rust
+enum Option<T> {
+    None,
+    Some(T),
+}
+```
+
+### The `match` Control flow operator
+
+- Patterns an be made up of **literal values**, **variable names**, **wildcards**, and many other things.
+
+- Matches in Rust are exhaustive: we must exhaust every last possibility in order for the code to be valid
+
+```rust
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter,
+}
+
+fn value_in_cents(coin: Coin) -> u8 {
+    match coin {
+        Coin::Penny => 1,
+        Coin::Nickel => 5,
+        Coin::Dime => 10,
+        Coin::Quarter => 25,
+    }
+}
+```
+
+- The `_` pattern will match any value.
+
+### Concise control flow with `if let`
+
+```rust
+fn main() {
+    let some_u8_value = Some(0u8);
+    match some_u8_value {
+        Some(3) => println!("three"),
+        _ => println!("other"),
+    }
+}
+
+fn main() {
+    let some_u8_value = Some(0u8);
+    if let Some(3) = some_u8_value {
+        println!("three");
+    } else {
+        println!("other");
+    }
+}
+```
