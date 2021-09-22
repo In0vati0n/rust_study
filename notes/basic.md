@@ -901,3 +901,65 @@ for word in text.split_whitespace() {
 }
 ```
 
+## Error Handling
+
+### Unrecoverable Errors with `panic!`
+
+- Can set `RUST_BACKTRACE` to 1 to get a backtrace of excatly what happened to cause the error. `RUST_BACKTRACE=1 cargo run`.
+
+```rust
+fn main() {
+    panic!("crash and burn");
+}
+```
+
+### Recoverable Errors with `Result`
+
+- Like the `Option` enum, the `Result` enum and its variants have been brought into scope by the prelude.
+
+```rust
+enum Result<T, E> {
+    Ok(T),
+    Err(E),
+}
+```
+
+- `unwrap`, return value inside the `Ok` while the `Result` value is the `Ok` variant, ohterwise `unwrap` will call the `panic!` macro. 
+
+    ```rust
+    use std::fs::File;
+
+    fn main() {
+        let f = File::open("hello.txt").unwrap();
+    }
+    ```
+
+- `expect` is similar to `unwrap`, let us also choose the `panic!` error message.
+
+    ```rust
+    use std::fs::File;
+
+    fn main() {
+        let f = File::open("hello.txt").expect("Failed to open hello.txt");
+    }
+    ```
+
+### Propagating Errors
+
+```rust
+fn read_username_from_file() -> Result<String, io::Error> {
+    let f = File::open("hello.txt");
+
+    let mut f = match f {
+        Ok(file) => file,
+        Err(e) => return Err(e),
+    };
+
+    let mut s = String::new();
+    
+    match f.read_to_string(&mut s) {
+        Ok(_) => Ok(s),
+        Err(e) => Err(e),
+    }
+}
+```
