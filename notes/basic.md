@@ -636,6 +636,7 @@ fn main() {
     }
 }
 ```
+
 ## Managing Growing Projects with Packages, Crates and Modules
 
 - **Module System**:
@@ -832,16 +833,71 @@ for b in "नमस्ते".bytes() {
 
 ### HashMap
 
-
-
 - Hash maps are homogeneous: all of the keys must have the same type, and all of the values must have the same type.
 
 ```rust
 use std::collections::HashMap;
 
+// ----- normal create -----
+
 let mut scores = HashMap::new();
 
 scores.insert(String::from("Blue"), 10);
 scores.insert(String::from("Yellow"), 50);
+
+// ----- create with iterators -----
+
+let teams = vec![String::from("Blue"), String::from("Yellow")];
+let initial_scores = vec![10, 50];
+
+let mut scores: HashMap<_, _> = teams.into_iter().zip(initial_scores.into_iter()).collect();
+
+// ----- ownership -----
+
+let field_name = String::from("Favorite color");
+let field_value = String::from("Blue");
+
+let mut map = HashMap::new();
+map.insert(field_name, field_value);
+// field_name and field_value are invalid at this point, try using them and
+// see what compiler error you get!
+
+// ----- accessing values -----
+
+let mut scores = HashMap::new();
+
+scores.insert(String::from("Blue"), 10);
+scores.insert(String::from("Yellow"), 50);
+
+let team_name = String::from("Blue");
+let score = scores.get(&team_name);
+
+// ----- iter ------
+
+for (key, value) in &scores {
+    println!("{}: {}", key, value);
+}
+
+// ----- updating value -----
+
+// 1. overwriting a value
+scores.insert(String::from("Blue"), 10);
+scores.insert(String::from("Blue"), 25);
+
+println!("{:?}", scores); // {"Blue": 25}
+
+// 2. only inserting a value if the key has no value
+scores.entry(String::from("Yellow")).or_insert(50);
+scores.entry(String::from("Blue")).or_insert(50);
+
+// 3. updating a value based on the old value
+let text = "hello world wonderful world";
+
+let mut map = HashMap::new();
+
+for word in text.split_whitespace() {
+    let count = map.entry(word).or_insert(0);
+    *count += 1;
+}
 ```
 
