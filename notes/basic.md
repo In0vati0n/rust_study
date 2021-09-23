@@ -1001,3 +1001,5 @@ fn read_username_from_file() -> Result<String, io::Error> {
 
 - ref: https://doc.rust-lang.org/book/ch09-03-to-panic-or-not-to-panic.html
 
+## Generic Types, Traits, and Lifetimes
+
