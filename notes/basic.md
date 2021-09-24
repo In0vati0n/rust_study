@@ -1003,3 +1003,218 @@ fn read_username_from_file() -> Result<String, io::Error> {
 
 ## Generic Types, Traits, and Lifetimes
 
+### Generic Data Types
+
+- In function
+
+    ```rust
+    fn largest<T>(list: &[T]) -> T {
+        let mut largest = list[0];
+
+        for &item in list {
+            if item > largest {
+                largest = item;
+            }
+        }
+
+        largest
+    }
+    ```
+
+- In struct definition
+
+    ```rust
+    struct Point<T, U> {
+        x: T,
+        y: U,
+    }
+    ```
+
+- In enum definition
+
+    ```rust
+    enum Option<T> {
+        Some(T),
+        None,
+    }
+    ```
+
+- In method definition
+
+    ```rust
+    struct Point<T> {
+        x: T,
+        y: T,
+    }
+
+    impl<T> Point<T> {
+        fn x(&self) -> &T {
+            &self.x
+        }
+    }
+    ```
+
+    Generic type parameters in a struct definition aren’t always the same as those you use in that struct’s method signatures.
+
+    ```rust
+    struct Point<T, U> {
+        x: T,
+        y: U,
+    }
+
+    impl<T, U> Point<T, U> {
+        fn mixup<V, W>(self, other: Point<V, W>) -> Point<T, W> {
+            Point {
+                x: self.x,
+                y: other.y,
+            }
+        }
+    }
+    ```
+
+- **Rust accomplishes this by performing monomorphization of the code that is using generics at compile time. Monomorphization is the process of turning generic code into specific code by filling in the concrete types that are used when compiled. So we pay no runtime cost for using generics.**
+
+### Traits: Defining Shared Behavior
+
+Trait definitions are a way to group method signatures together to define a set of behaviors necessary to accomplish some purpose.
+
+#### Defining a Trait
+
+```rust
+pub trait Summary {
+    fn summarize(&self) -> String;
+}
+```
+
+#### Implementing a Trait on a Type
+
+```rust
+pub trait Summary {
+    fn summarize(&self) -> String;
+}
+
+pub struct NewsArticle {
+    pub headline: String,
+    pub location: String,
+    pub author: String,
+    pub content: String,
+}
+
+impl Summary for NewsArticle {
+    fn summarize(&self) -> String {
+        format!("{}, by {} ({})", self.headline, self.author, self.location)
+    }
+}
+
+pub struct Tweet {
+    pub username: String,
+    pub content: String,
+    pub reply: bool,
+    pub retweet: bool,
+}
+
+impl Summary for Tweet {
+    fn summarize(&self) -> String {
+        format!("{}: {}", self.username, self.content)
+    }
+}
+```
+
+**One restriction to note with trait implementations is that we can implement a trait on a type only if either the trait or the type is local to our crate.**
+
+#### Default Implementations
+
+```rust
+pub trait Summary {
+    fn summarize(&self) -> String {
+        String::from("(Read more...)")
+    }
+}
+
+impl Summary for NewsArticle {}
+```
+
+#### Traits as Parameters
+
+```rust
+pub fn notify(item: &impl Summary) {
+    println!("Breaking news! {}", item.summarize());
+}
+```
+
+equivalent to:
+
+```rust
+pub fn notify<T: Summary>(item: &T) {
+    println!("Breaking news! {}", item.summarize());
+}
+```
+
+#### Specifying Multiple Trait Bounds with the `+` Syntax
+
+```rust
+pub fn notify(item: &(impl Summary + Display)) {
+```
+
+equivalent to:
+
+```rust
+pub fn notify<T: Summary + Display>(item: &T) {
+```
+
+#### Clearer Trait Bounds with `where` Clauses
+
+```rust
+fn some_function<T: Display + Clone, U: Clone + Debug>(t: &T, u: &U) -> i32 {
+```
+
+equivalent to:
+
+```rust
+fn some_function<T, U>(t: &T, u: &U) -> i32
+    where T: Display + Clone,
+          U: Clone + Debug
+{
+```
+
+#### Returning Types that Implement Traits
+
+```rust
+fn returns_summarizable() -> impl Summary {
+    Tweet {
+        username: String::from("horse_ebooks"),
+        content: String::from(
+            "of course, as you probably already know, people",
+        ),
+        reply: false,
+        retweet: false,
+    }
+}
+```
+
+#### Using Trait Bounds to Conditionally Implement Methods
+
+```rust
+use std::fmt::Display;
+
+struct Pair<T> {
+    x: T,
+    y: T,
+}
+
+impl<T> Pair<T> {
+    fn new(x: T, y: T) -> Self {
+        Self { x, y }
+    }
+}
+
+impl<T: Display + PartialOrd> Pair<T> {
+    fn cmp_display(&self) {
+        if self.x >= self.y {
+            println!("The largest member is x = {}", self.x);
+        } else {
+            println!("The largest member is y = {}", self.y);
+        }
+    }
+}
+```
