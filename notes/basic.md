@@ -1218,3 +1218,12 @@ impl<T: Display + PartialOrd> Pair<T> {
     }
 }
 ```
+
+### Validating References with Lifetimes
+
+- Every reference in Rust has a *lifetime*.
+
+#### Lifetime Annotation Syntax
+
+- Lifetime annotations don't change how long any of the references lives. 
+- 
