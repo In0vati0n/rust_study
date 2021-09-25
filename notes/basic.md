@@ -226,6 +226,7 @@ let result = loop {
 ## Ownership
 
 ### Ownership
+
 #### Ownership Rules
 
 - Each value in Rust has a variable that's called its owner.
@@ -530,6 +531,7 @@ Another useful feature of impl blocks is that we’re allowed to define function
 
 
 ## Enums and Pattern Matching
+
 ### Defining an Enum
 
 ```rust
@@ -1226,4 +1228,56 @@ impl<T: Display + PartialOrd> Pair<T> {
 #### Lifetime Annotation Syntax
 
 - Lifetime annotations don't change how long any of the references lives. 
-- 
+
+- Lifetime annotations describe the relationships of the Lifetimes of multiple references to each other without affecting the Lifetimes.
+
+- Syntax: start with an apostrophe(`'`) and are usually all lowercase and very short.
+
+    ```rust
+    &i32            // a reference
+    &'a u32         // a reference with an explicit lifetime
+    &'a mut i32     // a mutable reference with an explicit lifetime
+    ```
+
+
+#### Lifetime Annotations in Struct Definitions
+
+```rust
+// This annotation means an instance of ImportantExcerpt can’t outlive the reference it holds in its part field.
+struct ImportantExcerpt<'a> {
+    part: &'a str,
+}
+```
+
+#### Lifetime Elision
+
+- Rules:
+
+    1. each parameter that is a reference gets its own lifetime parameter
+    2.  if there is exactly one input lifetime parameter, that lifetime is assigned to all output lifetime parameters
+    3.  if there are multiple input lifetime parameters, but one of them is `&self` or `&mut self` because this is a method, the lifetime of `self` is assigned to all output lifetime parameters
+
+#### Lifetime Annotations in Method Definitions
+
+```rust
+struct ImportantExcerpt<'a> {
+    part: &'a str,
+}
+
+impl<'a> ImportantExcerpt<'a> {
+    fn level(&self) -> i32 {
+        3
+    }
+}
+
+impl<'a> ImportantExcerpt<'a> {
+    fn announce_and_return_part(&self, announcement: &str) -> &str {
+        println!("Attention please: {}", announcement);
+        self.part
+    }
+}
+```
+
+#### The Static Lifetime
+
+One special lifetime we need to discuss is `'static`, which means that this reference can live for the entire duration of the program.
