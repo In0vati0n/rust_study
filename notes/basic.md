@@ -1281,3 +1281,127 @@ impl<'a> ImportantExcerpt<'a> {
 #### The Static Lifetime
 
 One special lifetime we need to discuss is `'static`, which means that this reference can live for the entire duration of the program.
+
+## Writing Automated Tests
+
+### How to write tests
+
+The bodies of test functions typically perform these three actions:
+
+1. Set up any needed data or state.
+2. Run the code you want to test.
+3. Assert the results are what you expect.
+
+Add `#[test]` on the line before `fn` to change a function into a test function.
+
+#### Checking results with the `assert!` macro
+
+```rust
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+impl Rectangle {
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        self.width > other.width && self.height > other.height
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn larger_can_hold_smaller() {
+        let larger = Rectangle {
+            width: 8,
+            height: 7,
+        };
+        let smaller = Rectangle {
+            width: 5,
+            height: 1,
+        };
+
+        assert!(larger.can_hold(&smaller));
+    }
+}
+```
+
+#### Testing equality with the `assert_eq!` and `assert_ne!` macros
+
+```rust
+pub fn add_two(a: i32) -> i32 {
+    a + 2
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_adds_two() {
+        assert_eq!(4, add_two(2));
+    }
+}
+```
+
+#### Checking for panic with `should_panic`
+
+```rust
+pub struct Guess {
+    value: i32,
+}
+
+impl Guess {
+    pub fn new(value: i32) -> Guess {
+        if value < 1 || value > 100 {
+            panic!("Guess value must be between 1 and 100, got {}.", value);
+        }
+
+        Guess { value }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    #[should_panic]
+    fn greater_than_100() {
+        Guess::new(200);
+    }
+}
+```
+
+#### Using `Result<T, E>` in tests
+
+```rust
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() -> Result<(), String> {
+        if 2 + 2 == 4 {
+            Ok(())
+        } else {
+            Err(String::from("two plus two does not equal four"))
+        }
+    }
+}
+```
+
+
+### Controlling how tests are run
+
+- use `--test-threads` to control the number of threads to use.
+- use `--show-output` to tell Rust to also show the output of successful tests at the end
+- use `cargo test testname` to run a specific test
+- use `cargo test namepattern` to run a subset of tests
+- use `#[ignore]` to make the test ignored, use `cargo test -- --ignored` to run only the ignored tests
+
+### Test organization
+
+- Unit Tests: small and more focused, testing one module in isolation at a time, and can test private interfaces
+- Integration Tests: entirely external to your library and use your code in the same way any other external code would, using only the public interface and potentially exercising multiple modules per test
