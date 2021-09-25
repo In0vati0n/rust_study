@@ -1,5 +1,98 @@
 # Basic
 
+## Table of Contents
+
+- [Basic](#basic)
+  - [Table of Contents](#table-of-contents)
+  - [cargo command](#cargo-command)
+  - [variables and mutability](#variables-and-mutability)
+    - [const vs immutable variables](#const-vs-immutable-variables)
+    - [shadow vs mutable variables](#shadow-vs-mutable-variables)
+  - [Data Types](#data-types)
+    - [Scalar Types](#scalar-types)
+      - [Integer Types](#integer-types)
+      - [Floating-Point Types](#floating-point-types)
+      - [Boolean Type](#boolean-type)
+      - [The Character Type](#the-character-type)
+    - [Compound Types](#compound-types)
+      - [The Tuple Type](#the-tuple-type)
+      - [The Array Type](#the-array-type)
+  - [Functions](#functions)
+    - [Expression and Statement](#expression-and-statement)
+    - [Functions with Return Values](#functions-with-return-values)
+  - [Control Flow](#control-flow)
+    - [`if` Expression](#if-expression)
+      - [Using `if` in a let Statement](#using-if-in-a-let-statement)
+    - [Loops](#loops)
+      - [Returing Values from Loops](#returing-values-from-loops)
+  - [Ownership](#ownership)
+    - [Ownership](#ownership-1)
+      - [Ownership Rules](#ownership-rules)
+      - [Ways Variables and Data Interact: Move](#ways-variables-and-data-interact-move)
+      - [Ways Variables and Data Interact: Clone](#ways-variables-and-data-interact-clone)
+      - [Stack-Only Data: Copy](#stack-only-data-copy)
+      - [Ownership and Functions](#ownership-and-functions)
+      - [Return Values and Scope](#return-values-and-scope)
+    - [References and Borrowing](#references-and-borrowing)
+      - [Mutable References](#mutable-references)
+      - [Dangling References](#dangling-references)
+    - [Slice](#slice)
+      - [String Slices](#string-slices)
+      - [Other Slices](#other-slices)
+  - [Structs](#structs)
+    - [Defening and Instantiating Structs](#defening-and-instantiating-structs)
+    - [Tuple Struct](#tuple-struct)
+    - [Unit-Like structs without any fields](#unit-like-structs-without-any-fields)
+    - [Method Syntax](#method-syntax)
+    - [Assiciated Functions](#assiciated-functions)
+  - [Enums and Pattern Matching](#enums-and-pattern-matching)
+    - [Defining an Enum](#defining-an-enum)
+    - [Defining an Enum with data](#defining-an-enum-with-data)
+    - [The `match` Control flow operator](#the-match-control-flow-operator)
+    - [Concise control flow with `if let`](#concise-control-flow-with-if-let)
+  - [Managing Growing Projects with Packages, Crates and Modules](#managing-growing-projects-with-packages-crates-and-modules)
+    - [Packages and Crates](#packages-and-crates)
+    - [Modules](#modules)
+    - [Paths](#paths)
+    - [Privacy](#privacy)
+    - [Making Structs and Enums Public](#making-structs-and-enums-public)
+    - [`use` keyword](#use-keyword)
+    - [Separating Modules into Different Files](#separating-modules-into-different-files)
+  - [Common Collections](#common-collections)
+    - [Vector](#vector)
+    - [String](#string)
+    - [HashMap](#hashmap)
+  - [Error Handling](#error-handling)
+    - [Unrecoverable Errors with `panic!`](#unrecoverable-errors-with-panic)
+    - [Recoverable Errors with `Result`](#recoverable-errors-with-result)
+    - [Propagating Errors](#propagating-errors)
+    - [To `panic!` or Not to `panic!`](#to-panic-or-not-to-panic)
+  - [Generic Types, Traits, and Lifetimes](#generic-types-traits-and-lifetimes)
+    - [Generic Data Types](#generic-data-types)
+    - [Traits: Defining Shared Behavior](#traits-defining-shared-behavior)
+      - [Defining a Trait](#defining-a-trait)
+      - [Implementing a Trait on a Type](#implementing-a-trait-on-a-type)
+      - [Default Implementations](#default-implementations)
+      - [Traits as Parameters](#traits-as-parameters)
+      - [Specifying Multiple Trait Bounds with the `+` Syntax](#specifying-multiple-trait-bounds-with-the--syntax)
+      - [Clearer Trait Bounds with `where` Clauses](#clearer-trait-bounds-with-where-clauses)
+      - [Returning Types that Implement Traits](#returning-types-that-implement-traits)
+      - [Using Trait Bounds to Conditionally Implement Methods](#using-trait-bounds-to-conditionally-implement-methods)
+    - [Validating References with Lifetimes](#validating-references-with-lifetimes)
+      - [Lifetime Annotation Syntax](#lifetime-annotation-syntax)
+      - [Lifetime Annotations in Struct Definitions](#lifetime-annotations-in-struct-definitions)
+      - [Lifetime Elision](#lifetime-elision)
+      - [Lifetime Annotations in Method Definitions](#lifetime-annotations-in-method-definitions)
+      - [The Static Lifetime](#the-static-lifetime)
+  - [Writing Automated Tests](#writing-automated-tests)
+    - [How to write tests](#how-to-write-tests)
+      - [Checking results with the `assert!` macro](#checking-results-with-the-assert-macro)
+      - [Testing equality with the `assert_eq!` and `assert_ne!` macros](#testing-equality-with-the-assert_eq-and-assert_ne-macros)
+      - [Checking for panic with `should_panic`](#checking-for-panic-with-should_panic)
+      - [Using `Result<T, E>` in tests](#using-resultt-e-in-tests)
+    - [Controlling how tests are run](#controlling-how-tests-are-run)
+    - [Test organization](#test-organization)
+
 ## cargo command
 
 - `cargo build`: build a project
@@ -729,180 +822,179 @@ fn main() {
 
 - Vectors can only store values of the same type.
 
-```rust
-// ----- create a vector -----
+    ```rust
+    // ----- create a vector -----
 
-let v: Vec<i32> = Vec:new();
+    let v: Vec<i32> = Vec:new();
 
-let v = vec![1, 2, 3];
+    let v = vec![1, 2, 3];
 
-// ----- updating a vector -----
+    // ----- updating a vector -----
 
-v.push(5);
-v.push(6);
+    v.push(5);
+    v.push(6);
 
-// ----- drop -----
+    // ----- drop -----
 
-{
-    let v = vec![1, 2, 3, 4];
-    // do stuff with v
-} // <- v gose out of scope and is freed here
+    {
+        let v = vec![1, 2, 3, 4];
+        // do stuff with v
+    } // <- v gose out of scope and is freed here
 
-// ----- get elements -----
+    // ----- get elements -----
 
-// index start at 0
-let third: &i32 = &v[2];
+    // index start at 0
+    let third: &i32 = &v[2];
 
-match v.get(2) { // give Option<&i32>
-    Some(third) => println!("The third element is {}", third),
-    None => println!("There is no third element."),
-}
+    match v.get(2) { // give Option<&i32>
+        Some(third) => println!("The third element is {}", third),
+        None => println!("There is no third element."),
+    }
 
-// ----- iterating over the values in a vector -----
+    // ----- iterating over the values in a vector -----
 
-let v = vec![100, 32, 57];
-for i in &v {
-    println!("{}", i);
-}
+    let v = vec![100, 32, 57];
+    for i in &v {
+        println!("{}", i);
+    }
 
-let mut v = vec![100, 32, 57];
-for i in &mut v {
-    *i += 50;
-}
+    let mut v = vec![100, 32, 57];
+    for i in &mut v {
+        *i += 50;
+    }
 
-// ----- using an enum to store multiple types -----
+    // ----- using an enum to store multiple types -----
 
-enum SpreadsheetCell {
-    Int(i32),
-    Float(f64),
-    Text(String),
-}
+    enum SpreadsheetCell {
+        Int(i32),
+        Float(f64),
+        Text(String),
+    }
 
-let row = vec![
-    SpreadsheetCell::Int(3),
-    SpreadsheetCell::Text(String::from("blue")),
-    SpreadsheetCell::Float(10.12),
-];
-```
-
+    let row = vec![
+        SpreadsheetCell::Int(3),
+        SpreadsheetCell::Text(String::from("blue")),
+        SpreadsheetCell::Float(10.12),
+    ];
+    ```
 
 ### String
 
 - Both `String` and string slices are UTF-8 encoded.
 
-```rust
-// ----- create a new string -----
+    ```rust
+    // ----- create a new string -----
 
-let mut s = String::new();
+    let mut s = String::new();
 
-let data = "initial contents";
+    let data = "initial contents";
 
-let s = data.to_string();
+    let s = data.to_string();
 
-let s = "initial contents".to_string();
+    let s = "initial contents".to_string();
 
-let s = String::from("initial contents");
+    let s = String::from("initial contents");
 
-// ----- updating a string -----
+    // ----- updating a string -----
 
-let mut s = String::from("foo");
-s.push_str("bar");
+    let mut s = String::from("foo");
+    s.push_str("bar");
 
-let mut s1 = String:from("foo");
-let s2 = "bar";
-s1.push_str(s2);
-s1.push('l')
+    let mut s1 = String:from("foo");
+    let s2 = "bar";
+    s1.push_str(s2);
+    s1.push('l')
 
-let s1 = String::from("Hello, ");
-let s2 = String::from("world!");
-let s3 = s1 + &s2; // note s1 has been moved here and can no longer be used
-// + operator uses the add method
+    let s1 = String::from("Hello, ");
+    let s2 = String::from("world!");
+    let s3 = s1 + &s2; // note s1 has been moved here and can no longer be used
+    // + operator uses the add method
 
-let s1 = String::from("tic");
-let s2 = String::from("tac");
-let s3 = String::from("toe");
+    let s1 = String::from("tic");
+    let s2 = String::from("tac");
+    let s3 = String::from("toe");
 
-let s = format!("{}-{}-{}", s1, s2, s3); // doesn't take ownership of any of its parameters
+    let s = format!("{}-{}-{}", s1, s2, s3); // doesn't take ownership of any of its parameters
 
-for c in "नमस्ते".chars() {
-    println!("{}", c);
-}
+    for c in "नमस्ते".chars() {
+        println!("{}", c);
+    }
 
-for b in "नमस्ते".bytes() {
-    println!("{}", b);
-}
+    for b in "नमस्ते".bytes() {
+        println!("{}", b);
+    }
 
-```
+    ```
 
 ### HashMap
 
 - Hash maps are homogeneous: all of the keys must have the same type, and all of the values must have the same type.
 
-```rust
-use std::collections::HashMap;
+    ```rust
+    use std::collections::HashMap;
 
-// ----- normal create -----
+    // ----- normal create -----
 
-let mut scores = HashMap::new();
+    let mut scores = HashMap::new();
 
-scores.insert(String::from("Blue"), 10);
-scores.insert(String::from("Yellow"), 50);
+    scores.insert(String::from("Blue"), 10);
+    scores.insert(String::from("Yellow"), 50);
 
-// ----- create with iterators -----
+    // ----- create with iterators -----
 
-let teams = vec![String::from("Blue"), String::from("Yellow")];
-let initial_scores = vec![10, 50];
+    let teams = vec![String::from("Blue"), String::from("Yellow")];
+    let initial_scores = vec![10, 50];
 
-let mut scores: HashMap<_, _> = teams.into_iter().zip(initial_scores.into_iter()).collect();
+    let mut scores: HashMap<_, _> = teams.into_iter().zip(initial_scores.into_iter()).collect();
 
-// ----- ownership -----
+    // ----- ownership -----
 
-let field_name = String::from("Favorite color");
-let field_value = String::from("Blue");
+    let field_name = String::from("Favorite color");
+    let field_value = String::from("Blue");
 
-let mut map = HashMap::new();
-map.insert(field_name, field_value);
-// field_name and field_value are invalid at this point, try using them and
-// see what compiler error you get!
+    let mut map = HashMap::new();
+    map.insert(field_name, field_value);
+    // field_name and field_value are invalid at this point, try using them and
+    // see what compiler error you get!
 
-// ----- accessing values -----
+    // ----- accessing values -----
 
-let mut scores = HashMap::new();
+    let mut scores = HashMap::new();
 
-scores.insert(String::from("Blue"), 10);
-scores.insert(String::from("Yellow"), 50);
+    scores.insert(String::from("Blue"), 10);
+    scores.insert(String::from("Yellow"), 50);
 
-let team_name = String::from("Blue");
-let score = scores.get(&team_name);
+    let team_name = String::from("Blue");
+    let score = scores.get(&team_name);
 
-// ----- iter ------
+    // ----- iter ------
 
-for (key, value) in &scores {
-    println!("{}: {}", key, value);
-}
+    for (key, value) in &scores {
+        println!("{}: {}", key, value);
+    }
 
-// ----- updating value -----
+    // ----- updating value -----
 
-// 1. overwriting a value
-scores.insert(String::from("Blue"), 10);
-scores.insert(String::from("Blue"), 25);
+    // 1. overwriting a value
+    scores.insert(String::from("Blue"), 10);
+    scores.insert(String::from("Blue"), 25);
 
-println!("{:?}", scores); // {"Blue": 25}
+    println!("{:?}", scores); // {"Blue": 25}
 
-// 2. only inserting a value if the key has no value
-scores.entry(String::from("Yellow")).or_insert(50);
-scores.entry(String::from("Blue")).or_insert(50);
+    // 2. only inserting a value if the key has no value
+    scores.entry(String::from("Yellow")).or_insert(50);
+    scores.entry(String::from("Blue")).or_insert(50);
 
-// 3. updating a value based on the old value
-let text = "hello world wonderful world";
+    // 3. updating a value based on the old value
+    let text = "hello world wonderful world";
 
-let mut map = HashMap::new();
+    let mut map = HashMap::new();
 
-for word in text.split_whitespace() {
-    let count = map.entry(word).or_insert(0);
-    *count += 1;
-}
-```
+    for word in text.split_whitespace() {
+        let count = map.entry(word).or_insert(0);
+        *count += 1;
+    }
+    ```
 
 ## Error Handling
 
@@ -967,7 +1059,7 @@ fn read_username_from_file() -> Result<String, io::Error> {
 }
 ```
 
-使用`?`操作符将上面的代码简化为
+use `?` operator:
 
 ```rust
 use std::fs::File;
@@ -982,7 +1074,7 @@ fn read_username_from_file() -> Result<String, io::Error> {
 }
 ```
 
-使用链式写法继续简化为
+use chain:
 
 ```rust
 use std::fs::File;
@@ -996,7 +1088,7 @@ fn read_username_from_file() -> Result<String, io::Error> {
 }
 ```
 
-**The `?` Operator can be used in functions that return `Result`
+**The `?` Operator can be used in functions that return `Result`**
 
 
 ### To `panic!` or Not to `panic!`
