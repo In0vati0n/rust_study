@@ -1,5 +1,7 @@
 # Basic
 
+ref: https://doc.rust-lang.org/stable/book/
+
 ## Table of Contents
 
 - [Basic](#basic)
