@@ -94,6 +94,8 @@ ref: https://doc.rust-lang.org/stable/book/
       - [Using `Result<T, E>` in tests](#using-resultt-e-in-tests)
     - [Controlling how tests are run](#controlling-how-tests-are-run)
     - [Test organization](#test-organization)
+  - [Functional Language Features: Iterators and Closures](#functional-language-features-iterators-and-closures)
+    - [Defining a closure](#defining-a-closure)
 
 ## cargo command
 
@@ -1499,3 +1501,15 @@ mod tests {
 
 - Unit Tests: small and more focused, testing one module in isolation at a time, and can test private interfaces
 - Integration Tests: entirely external to your library and use your code in the same way any other external code would, using only the public interface and potentially exercising multiple modules per test
+
+## Functional Language Features: Iterators and Closures
+
+### Defining a closure
+
+```rust
+let a_closure = |num| {
+    println!("calculating slowly...");
+    num
+};
+```
+
