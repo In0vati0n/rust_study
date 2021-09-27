@@ -1504,12 +1504,120 @@ mod tests {
 
 ## Functional Language Features: Iterators and Closures
 
-### Defining a closure
+
+### Closure
+#### Defining a closure
+
+- Closures don't require you to annotate the types of the parameters or the return value.
 
 ```rust
 let a_closure = |num| {
-    println!("calculating slowly...");
     num
 };
+
+let a_closure_with_type = |num: u32| -> u32 {
+    num
+};
+
+let a_closure_without_brackets = |num| num;
 ```
 
+#### Storing Closures Using Generic Parameters and the `Fn` Traits
+
+```rust
+struct Cacher<T>
+where
+    T : Fn(u32) -> u32,
+{
+    calculation: T,
+    value: Option<u32>,
+}
+```
+
+#### Capturing the Environment with Closures
+
+```rust
+fn main() {
+    let x = 4;
+
+    let equal_to_x = |z| z == x;
+
+    let y = 4;
+
+    assert!(equal_to_x(y));
+}
+```
+
+- Closures can capture values from their environment in three ways:
+
+    1. take ownership: `FnOnce` consumes the variables it captures from its enclosing scope, known as the closure's environment. To consume the captured variables, the closure must take ownership of these variables and move them into the closure when it is defined. The `Once` part of the name represents the fact that the closure can't take ownership of the same variables more than once, so it can be called only once.
+    2. borrow mutably: `FnMut` can change the environment because it mutably borrows values.
+    3. borrow immediately: `Fn` borrows values from the environment immutably.
+    
+- When you create a closure, Rust infers which trait to use based on how the closure uses the values from the environment.
+
+### Iterators
+#### Processing a Series of Items with Iterators
+
+```rust
+fn main() {
+    let v1 = vec![1, 2, 3];
+
+    let v1_iter = v1.iter();
+
+    for val in v1_iter {
+        println!("Got: {}", val);
+    }
+}
+```
+
+- All iterators implement a trait named `Iterator` that is defined in the standard library.
+
+    ```rust
+    pub trait Iterator {
+        type Item;
+        
+        fn next(&mut self) -> Option<Self::Item>;
+        
+        // methods with default implementations elided
+    }
+    ```
+
+- The `Iterator` trait only requires implementors to define one method: the `next` method, which returns one item of the iterator at a time wrapped in `Some` and, when iteration is over, returns `None`.
+
+#### Methods that Consume the iterator
+
+- Methods that call `next` are called *consuming adaptors*, like `sum`.
+
+- You can find out about these methods by looking in the standard library API documentation for the `Iterator` trait.
+
+#### Methods that Produce Other Iterators
+
+- *Iterator adaptors* allow you to change iterators into different kinds of iterators.
+
+#### Creating Our Own Iterator with the `Iterator` Trait
+
+```rust
+struct Counter {
+    count: u32,
+}
+
+impl Counter {
+    fn new() -> Counter {
+        Counter { count: 0 }
+    }
+}
+
+impl Iterator for Counter {
+    type Item = u32;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.count < 5 {
+            self.count += 1;
+            Some(self.count)
+        } else {
+            None
+        }
+    }
+}
+```
