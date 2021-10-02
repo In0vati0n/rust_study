@@ -96,6 +96,11 @@ ref: https://doc.rust-lang.org/stable/book/
     - [Test organization](#test-organization)
   - [Functional Language Features: Iterators and Closures](#functional-language-features-iterators-and-closures)
     - [Defining a closure](#defining-a-closure)
+    - [Comparing Performance: Loops vs. Iterators](#comparing-performance-loops-vs-iterators)
+  - [More About Cargo and Crates.io](#more-about-cargo-and-cratesio)
+    - [Publising a Crate to Crates.io](#publising-a-crate-to-cratesio)
+      - [Making Useful Documentation Comments](#making-useful-documentation-comments)
+      - [Documentation Comments as Tests](#documentation-comments-as-tests)
 
 ## cargo command
 
@@ -188,7 +193,7 @@ let f: bool = false;
 let tup: (i32, f64, u8) = (500, 6.4, 1);
 
 // destructuring
-let (x, y, z) = tup; 
+let (x, y, z) = tup;
 
 // access with index
 let five_hundred = tup.0;
@@ -300,9 +305,9 @@ let number = if condition { 5 } else { 6 };
         println!("the value is: {}", element);
     }
     ```
-    
+
     *Faster than `while` version, becaure it won't check index every iteration.*
-    
+
     ```rust
     for number in (1..4).rev() {
         println!("{}!", number);
@@ -366,7 +371,7 @@ println!("s1 = {}, s2 = {}", s1, s2);
     - All the floating point types, such as f64.
     - The character type, char.
     - Tuples, if they **only** contain types that also implement Copy.
-    
+
 #### Ownership and Functions
 
 - Passing a variable to a function will move or copy, just as assignment does.
@@ -400,19 +405,19 @@ fn makes_coy(some_integer: i32) { // some_integer comes into scope
 ```rust
 fn main() {
     let s1 = gives_ownership(); // gives_ownership moves its return value into s1
-    
+
     let s2 = String::from("hello"); // s2 comes into scope
-    
+
     let s3 = takes_and_gives_back(s2); // s2 is moved into takes_and_gives_back,
-                                       // which also moves its return value into s3 
+                                       // which also moves its return value into s3
 } // Here, s3 goes out of scope and is dropped. s2 goes out of scope but was moved,
 // so nothing happens. s1 goes out of scope and is dropped.
 
 fn gives_ownership() -> String { // gives_ownership will move its return value into
                                  // the function that calls it
-    
+
     let some_string = String::from("hello"); // some_string come into scope
-    
+
     some_string // some_string is returned and moves out to the calling function
 }
 
@@ -430,9 +435,9 @@ fn takes_and_gives_back(a_string: String) -> String { // a_string comes into sco
 ```rust
 fn main() {
     let s1 = String::from("hello");
-    
+
     let len = calculate_length(&s1);
-    
+
     println!("The length of '{}' is {}.", s1, len);
 }
 
@@ -448,7 +453,7 @@ fn calculate_length(s: &String) -> usize {
 ```rust
 fn main() {
     let mut s = String::from("hello");
-    
+
     change(&mut s);
 }
 
@@ -462,11 +467,11 @@ fn change(some_string: &mut String) {
 ```rust
 fn main() {
     let mut s = String::from("hello");
-    
+
     {
         let r1 = &mut s;
     } // r1 goes out of scope here, so we can make a new reference with no problems.
-    
+
     let r2 = &mut s;
 }
 ```
@@ -478,18 +483,18 @@ fn main() {
 ```rust
 fn main() {
     let mut s = String::from("hello");
-    
+
     let r1 = &s; // no problem
     let r2 = &s; // no problem
-    
+
     println!("{} and {}", r1, r2);
     // variables r1 and r2 will not used after this point
-    
+
     let r3 = &mut s; // no problem
     println!("{}", r3);
-    
+
     // println!("{}", r1); // error!
-    // mutable reference cannot be used while have an immutable 
+    // mutable reference cannot be used while have an immutable
     // reference one
 }
 ```
@@ -546,7 +551,7 @@ assert_eq!(slice, &[2, 3]);
         sign_in_count: u64,
         active: bool,
     }
-    
+
     fn main() {
         let user1 = User {
             email: String::from("someone@example.com"),
@@ -556,7 +561,7 @@ assert_eq!(slice, &[2, 3]);
         };
     }
     ```
-    
+
 - Using the Field Init Shorthand when variables and Fields have the same name.
 
     ```rust
@@ -569,7 +574,7 @@ assert_eq!(slice, &[2, 3]);
         }
     }
     ```
-    
+
 - Creating instances from other instances with struct update syntax.
 
     ```rust
@@ -580,7 +585,7 @@ assert_eq!(slice, &[2, 3]);
             active: true,
             sign_in_count: 1,
         };
-    
+
         let user2 = User {
             email: String::from("another@example.com"),
             username: String::from("anotherusername567"),
@@ -597,7 +602,7 @@ assert_eq!(slice, &[2, 3]);
 fn main() {
     struct Color(i32, i32, i32);
     struct Point(i32, i32, i32);
-    
+
     let black = Color(0, 0, 0);
     let origin = Point(0, 0, 0);
 }
@@ -751,28 +756,28 @@ fn main() {
 - A **crate** is a binary or library.
 
     - The *crate root* is a source file that the Rust compiler starts from and makes up the root module of your crate.
-    
+
 - A **package** is one or more crates that provide a set of functionality.
 
     - A package contains a *Cargo.toml* file that describes how to build those crates.
-    
+
     - A package can contain at most one library crate. It can contain as many library crates as you'd like, but it must contain as least one crate (either library or binary).
-    
+
     - *src/main.rs*: the crate root of a binary crate with the same name as the package.
 
     - *src/lib.rs*: the crate root of a library crate with the same name as the package.
-    
-    
+
+
     - A package can have multiple binary crates by placing files in the *src/bin* directory: each file will be a separate binary crate.
-    
+
 ### Modules
 
-- **Modules** 
+- **Modules**
 
     1. let us organize code within a crate into groups for readability and easy reuse.
     2. control the *privacy* of items, which whether an item can be used by outside code(*public*) or is an internal implementation detail and not available for outside use(*private*).
-    
-    
+
+
 - Define a module by starting with the `mod` keyword
 
 ### Paths
@@ -781,7 +786,7 @@ fn main() {
 
     - An *absolute path* starts from a crate root by using a crate name or a literal `crate`.
     - A *relative path* starts from the current module and uses `self`, `super` or an identifier in the current module.
-    
+
 ### Privacy
 
 - All items (functions, methods, structs, enums, modules, and constants) are **private** by default. Items in a parent module can't use the private items inside child modules, but items in child modules can use the items in their ancestor modules.
@@ -819,7 +824,7 @@ fn main() {
     - A **vector** allows you to store a variable number of values next to each other.
     - A **string** is a collection of characters.
     - A **hash map** allows you to associate a value with a particular key.
-    
+
 ### Vector
 
 - Vectors allow you to store more than one value in a single data structure that puts all the values next to each other in memory.
@@ -1023,7 +1028,7 @@ enum Result<T, E> {
 }
 ```
 
-- `unwrap`, return value inside the `Ok` while the `Result` value is the `Ok` variant, ohterwise `unwrap` will call the `panic!` macro. 
+- `unwrap`, return value inside the `Ok` while the `Result` value is the `Ok` variant, ohterwise `unwrap` will call the `panic!` macro.
 
     ```rust
     use std::fs::File;
@@ -1055,7 +1060,7 @@ fn read_username_from_file() -> Result<String, io::Error> {
     };
 
     let mut s = String::new();
-    
+
     match f.read_to_string(&mut s) {
         Ok(_) => Ok(s),
         Err(e) => Err(e),
@@ -1323,7 +1328,7 @@ impl<T: Display + PartialOrd> Pair<T> {
 
 #### Lifetime Annotation Syntax
 
-- Lifetime annotations don't change how long any of the references lives. 
+- Lifetime annotations don't change how long any of the references lives.
 
 - Lifetime annotations describe the relationships of the Lifetimes of multiple references to each other without affecting the Lifetimes.
 
@@ -1512,4 +1517,59 @@ let a_closure = |num| {
     num
 };
 ```
+
+### Comparing Performance: Loops vs. Iterators
+
+- Iterators are one of Rust's zero-cost abstractions, by which we mean using the abstraction imposes no additional runtime overhead.
+
+- *Unrolling* is an optimization that removes the overhead of the loop controlling code and instead generates repetive code for each iteration of the loop.
+
+## More About Cargo and Crates.io
+
+- *Release profiles* are predefined and customizable profiles with different configurations that allow a programmer to have more control over various options for compiling code.
+
+- Use `[profile.*]` section
+
+    ```toml
+    [profile.dev]
+    opt-level = 0
+
+    [profile.release]
+    opt-level = 3
+    ```
+
+### Publising a Crate to Crates.io
+
+#### Making Useful Documentation Comments
+
+- Documentation comments use three slashes, `///`, and support **Markdown** notation foor formatting the text.
+
+```rust
+/// Adds one to the number given
+///
+/// # Examples
+/// ```
+/// let arg = 5;
+/// let answer = my_crate::add_one(arg);
+///
+/// assert_eq!(6, answer);
+/// ```
+pub fn add_one(x: i32) -> i32 {
+    x + 1
+}
+```
+
+- We can generate the HTML documentation from this documentation comment by running `cargo doc`.
+
+- Here are some other sections that crate authors commonly use in thier documentation:
+
+    - **Panics**: The scenarios in which the function being documented could panic.
+
+    - **Errors**: If the function returns a `Result`, describing the kinds of errors that might occur and what conditions might cause those errors to be returned can be helpful.
+
+    - **Safety**: If the function is `unsafe` to call, there should be a section explaining why the function is unsafe and covering the invariants that the function expects callers to uphold.
+
+#### Documentation Comments as Tests
+
+- Running `cargo test` will run the code examples in your documentations as tests.
 
