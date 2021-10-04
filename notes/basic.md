@@ -104,11 +104,15 @@ ref: https://doc.rust-lang.org/stable/book/
       - [Methods that Consume the iterator](#methods-that-consume-the-iterator)
       - [Methods that Produce Other Iterators](#methods-that-produce-other-iterators)
       - [Creating Our Own Iterator with the `Iterator` Trait](#creating-our-own-iterator-with-the-iterator-trait)
-    - [Comparing Performance: Loops vs. Iterators](#comparing-performance-loops-vs-iterators)
+      - [Comparing Performance: Loops vs. Iterators](#comparing-performance-loops-vs-iterators)
   - [More About Cargo and Crates.io](#more-about-cargo-and-cratesio)
     - [Publising a Crate to Crates.io](#publising-a-crate-to-cratesio)
       - [Making Useful Documentation Comments](#making-useful-documentation-comments)
       - [Documentation Comments as Tests](#documentation-comments-as-tests)
+      - [Commenting Contained Items](#commenting-contained-items)
+  - [Smart Pointers](#smart-pointers)
+    - [Using `Box<T>` to Point to Data on the Heap](#using-boxt-to-point-to-data-on-the-heap)
+      - [Using a `Box<T>` to Store Data ont the Heap](#using-a-boxt-to-store-data-ont-the-heap)
 
 ## cargo command
 
@@ -148,26 +152,26 @@ const MAX_POINT: u32 = 100_000;
 
 #### Integer Types
 
-|Length|Signed|Unsigned|
-|:---|:---|:---|
-|8-bit|i8|u8|
-|16-bit|i16|u16|
-|32-bit(default)|i32|u32|
-|64-bit|i64|u64|
-|128-bit|i128|u128|
-|arch|isize|usize|
+| Length          | Signed | Unsigned |
+| :-------------- | :----- | :------- |
+| 8-bit           | i8     | u8       |
+| 16-bit          | i16    | u16      |
+| 32-bit(default) | i32    | u32      |
+| 64-bit          | i64    | u64      |
+| 128-bit         | i128   | u128     |
+| arch            | isize  | usize    |
 
 *Signed numbers are stored using two's complement representation*
 
 Integer Literals in Rust:
 
-|Number literals|Example|
-|:---|:---|
-|Decimal|98_222|
-|Hex|0xff|
-|Octal|0o77|
-|Binary|0b1111_0000|
-|Byte(u8 only)|b'A'|
+| Number literals | Example     |
+| :-------------- | :---------- |
+| Decimal         | 98_222      |
+| Hex             | 0xff        |
+| Octal           | 0o77        |
+| Binary          | 0b1111_0000 |
+| Byte(u8 only)   | b'A'        |
 
 #### Floating-Point Types
 
@@ -1635,7 +1639,7 @@ impl Iterator for Counter {
 }
 ```
 
-### Comparing Performance: Loops vs. Iterators
+#### Comparing Performance: Loops vs. Iterators
 
 - Iterators are one of Rust's zero-cost abstractions, by which we mean using the abstraction imposes no additional runtime overhead.
 
@@ -1690,3 +1694,43 @@ pub fn add_one(x: i32) -> i32 {
 
 - Running `cargo test` will run the code examples in your documentations as tests.
 
+#### Commenting Contained Items
+
+- `//!` add documentation to the item that contains the comments
+
+## Smart Pointers
+
+- A *pointer* is a general concept for a variable that contains an addresss in memory.
+
+- *Smart pointers* are data structures that not only act like a pointer but also have additional metadata and capabilities.
+
+- The characteristic that distinguishes a smart pointer from an ordinary struct is that smart pointers implement the `Deref` and `Drop` traits.
+
+    - The `Deref` trait allows an instance of the smart pointer sturct to behave like a reference.
+
+    - The `Drop` trait allows you to customize the code that is run when an instance of the smart pointer goes out of scope.
+
+- Most common smart pointers in the standard library:
+
+    - `Box<T>` for allocating values on the heap
+    - `Rc<T>`, a reference counting type that enables multiple ownership
+    - `Ref<T>` and `RefMut<T>`, accessed through `RefCell<T>`, a type that enforces the borrowing rules at runtime instead of compile time
+
+### Using `Box<T>` to Point to Data on the Heap
+
+- You'll use them most often in these situations:
+
+    - When you have a type whose size can't be known at compile time and you want to use a value of the type in a context that requires an exact size.
+
+    - When you have a large amount of data and you want to transfer ownership but ensure the data won't be copied when you do so.
+
+    - When you want to own a value and you care only that it's a type that implements a particular trait rather than being of a specific type.
+
+#### Using a `Box<T>` to Store Data ont the Heap
+
+```rust
+fn main() {
+    let b = Box::new(5);
+    println("b = {}", b);
+}
+```
