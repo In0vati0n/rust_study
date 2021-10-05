@@ -113,6 +113,7 @@ ref: https://doc.rust-lang.org/stable/book/
   - [Smart Pointers](#smart-pointers)
     - [Using `Box<T>` to Point to Data on the Heap](#using-boxt-to-point-to-data-on-the-heap)
       - [Using a `Box<T>` to Store Data ont the Heap](#using-a-boxt-to-store-data-ont-the-heap)
+    - [Treating Smart Pointers Like Regular References with `Deref` Trait](#treating-smart-pointers-like-regular-references-with-deref-trait)
 
 ## cargo command
 
@@ -1734,3 +1735,112 @@ fn main() {
     println("b = {}", b);
 }
 ```
+
+### Treating Smart Pointers Like Regular References with `Deref` Trait
+
+- Implementing the `Deref` trait allows you to customsize the behavior of the *dereference operator*, `*`.
+
+```rust
+use std::ops::Deref;
+
+struct MyBox<T>(T);
+
+impl<T> MyBox<T> {
+    fn new(x: T) -> MyBox<T> {
+        MyBox(x)
+    }
+}
+
+impl<T> Deref for MyBox<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+```
+
+- Without the `Deref` trait, the compiler can only dereference `&` references. The `deref` method gives the compiler the ability to take a value of any type that implements `Deref` and call the `deref` method to get a `&` reference that it knows how to dereference.
+
+    - When we entered `*y`, behind the scenes Rust actually ran this code: `*(y.deref())`
+
+### Implicit Deref Coercions with Functions and Methods
+
+- *Deref coercion* is a convenience that Rust performs on arguments to functions and methods.
+
+- Deref coercion works only on types that implement the `Deref` trait.
+
+### How Deref Coercion Interacts with Mutability
+
+- Similiar to how you use the `Deref` trait to override the `*` operator on immutable references, you can use the `DerefMut` trait to override the `*` operator on mutable references.
+
+- Rust does deref coercion when it find types and trait implementations in three cases:
+
+    - From `&T` to `&U` when `T: Deref<Target=U>`
+    - From `&mut T` to `&mut U` when `T: DerefMut<Target=U>`
+    - From `&mut T` to `&U` when `T: Deref<Target=U>`
+
+- Rust will also coerce a mutable reference to an immutable one, but the reverse is *not* possible.
+
+### Running Code on Cleanup with the `Drop` Trait
+
+- The `Drop` trait lets you customize what happens when a value is about to go out of scope.
+
+```rust
+struct CustomSmartPointer {
+    data: String,
+}
+
+impl Drop for CustomSmartPointer {
+    fn drop(&mut self) {
+        println!("Dropping CustomSmartPointer with data `{}`!", self.data);
+    }
+}
+```
+
+### Dropping a Value Early with `std::mem::drop`
+
+- If we need to force a value to be cleaned up early, we can use the `std::mem::drop` function.
+
+```rust
+fn main() {
+    let c = CustomSmartPointer {
+        data: String::from("some data"),
+    };
+
+    println("CustomSmartPointer created.");
+    drop(c);
+    println("CustomSmartPointer dropped before the end of main.");
+}
+```
+
+### `Rc<T>`, the Reference Counted Smart Pointer
+
+- To enable multiple ownership, Rust has a type called `Rc<T>`, which is an abbreviation for *reference counting*.
+
+- Note that `Rc<T>` is only for use in single-threaded scenarios.
+
+```rust
+enum List {
+    Cons(i32, Rc<List>),
+    Nil,
+}
+
+use crate::List::{Cons, Nil};
+use std::rc::Rc;
+
+fn main() {
+    let a = Rc::new(Cons(5, Rc::new(Cons(10, Rc::new(Nil)))));
+    let b = Cons(3, Rc::clone(&a));
+    let c = Cons(4, Rc::clone(&a));
+}
+```
+
+### `RefCell<T>` and the Interior Mutability Pattern
+
+- *Interior mutability* is a design pattern in Rust that allows you to mutate data even when there are immutable references to that data.
+
+- Unlike `Rc<T>`, the `RefCell<T>` type represents single ownership over the data it holds.
+
+- With references and `Box<T>`, the borrowing rules' invariants are enforced at compile time. With `RefCell<T>`, these invariants are enforced at *runtime*. With references, if you break these rules, you'll get a compiler error. With `RefCell<T>`, if you break these rules, your program will panic and exit.
+
