@@ -124,6 +124,8 @@ ref: https://doc.rust-lang.org/stable/book/
   - [Fearless Concurrency](#fearless-concurrency)
     - [Using Threads to Run Code Simultaneously](#using-threads-to-run-code-simultaneously)
     - [Using Message Passing to Transfer Data Between Threads](#using-message-passing-to-transfer-data-between-threads)
+    - [Shared-State Concurrency](#shared-state-concurrency)
+    - [Extensible Concurrency with the `Sync` and `Send` Traits](#extensible-concurrency-with-the-sync-and-send-traits)
 
 ## cargo command
 
@@ -1970,3 +1972,29 @@ fn main() {
 - A *channel* in programming has two halves: a *transmitter* and a *receiver*.
 
 - A *channel* is said to be *closed* if either the transmitter or receiver half is dropped.
+
+- Creating multiple producers by `clone` the transmitter.
+
+### Shared-State Concurrency
+
+- Using mutexes to allow access to data from one thread at a time.
+
+- *Mutex* is an abbreviation for *mutual exclusion*.
+
+- `Arc<T>` is a type like `Rc<T>` that is safe to use in concurrent situations.
+
+### Extensible Concurrency with the `Sync` and `Send` Traits
+
+- Two concurrency concepts are embedded in the language: the `std::marker` traits `Sync` and `Send`.
+
+- Allowing transference of ownership between threads with `Send`.
+
+- Almost every Rust type is `Send`, but there are some exceptions, including `Rc<T>`.
+
+- Any type composed entirely of `Send` types is automatically marked as `Send` as well, almost all primitive types are `Send`.
+
+- Allowing access from multiple threads with `Sync`.
+
+- Primitive types are `Sync`, and types composed entirely of types that are `Sync` are also `Sync`.
+
+- Manually implementing these traits involves implementing unsafe Rust code.
