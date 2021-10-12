@@ -121,6 +121,9 @@ ref: https://doc.rust-lang.org/stable/book/
     - [`Rc<T>`, the Reference Counted Smart Pointer](#rct-the-reference-counted-smart-pointer)
     - [`RefCell<T>` and the Interior Mutability Pattern](#refcellt-and-the-interior-mutability-pattern)
     - [Reference Cycles Can Leak Memory](#reference-cycles-can-leak-memory)
+  - [Fearless Concurrency](#fearless-concurrency)
+    - [Using Threads to Run Code Simultaneously](#using-threads-to-run-code-simultaneously)
+    - [Using Message Passing to Transfer Data Between Threads](#using-message-passing-to-transfer-data-between-threads)
 
 ## cargo command
 
@@ -1911,3 +1914,59 @@ fn main() {
 
 - Turning an `Rc<T>` into a `Weak<T>` to prevent reference cycles
 
+## Fearless Concurrency
+
+### Using Threads to Run Code Simultaneously
+
+- Some possible problems:
+
+    - Race conditions, where threads are accessing data or resources in an inconsistent order.
+    - Deadlocks, where two threads are waiting for each other to finish using a resource the order thread has, preventing both threads from continuing.
+    - Bugs that happen only in certain situations and are hard to reproduce and fix reliably.
+
+- Rust standard library only provides an implementation of 1:1 threading. Beacause Rust is such a low-level language, there are crates that implement M:N threading.
+
+- Creating a new thread with `spawn`
+
+    ```rust
+    use std::thread;
+    use std::time::Duration;
+
+    fn main() {
+        thread::spawn(|| {
+            for i in 1..10 {
+                println!("hi number {} from the spawned thread!", i);
+                thread::sleep(Duration::from_millis(1));
+            }
+        });
+
+        for i in 1..5 {
+            println!("hi number {} from the main thread!", i);
+            thread::sleep(Duration::from_millis(1));
+        }
+    }
+    ```
+
+- Waiting for all threads to finish using `join` handles
+
+- Using `move` closures with Threads
+
+    ```rust
+    use std::thread;
+
+    fn main() {
+        let v = vec![1, 2, 3];
+
+        let handle = thread::spawn(move || {
+            println!("{:?}", v);
+        });
+
+        handle.join().unwrap();
+    }
+    ```
+
+### Using Message Passing to Transfer Data Between Threads
+
+- A *channel* in programming has two halves: a *transmitter* and a *receiver*.
+
+- A *channel* is said to be *closed* if either the transmitter or receiver half is dropped.
