@@ -114,6 +114,13 @@ ref: https://doc.rust-lang.org/stable/book/
     - [Using `Box<T>` to Point to Data on the Heap](#using-boxt-to-point-to-data-on-the-heap)
       - [Using a `Box<T>` to Store Data ont the Heap](#using-a-boxt-to-store-data-ont-the-heap)
     - [Treating Smart Pointers Like Regular References with `Deref` Trait](#treating-smart-pointers-like-regular-references-with-deref-trait)
+    - [Implicit Deref Coercions with Functions and Methods](#implicit-deref-coercions-with-functions-and-methods)
+    - [How Deref Coercion Interacts with Mutability](#how-deref-coercion-interacts-with-mutability)
+    - [Running Code on Cleanup with the `Drop` Trait](#running-code-on-cleanup-with-the-drop-trait)
+    - [Dropping a Value Early with `std::mem::drop`](#dropping-a-value-early-with-stdmemdrop)
+    - [`Rc<T>`, the Reference Counted Smart Pointer](#rct-the-reference-counted-smart-pointer)
+    - [`RefCell<T>` and the Interior Mutability Pattern](#refcellt-and-the-interior-mutability-pattern)
+    - [Reference Cycles Can Leak Memory](#reference-cycles-can-leak-memory)
 
 ## cargo command
 
@@ -1843,4 +1850,64 @@ fn main() {
 - Unlike `Rc<T>`, the `RefCell<T>` type represents single ownership over the data it holds.
 
 - With references and `Box<T>`, the borrowing rules' invariants are enforced at compile time. With `RefCell<T>`, these invariants are enforced at *runtime*. With references, if you break these rules, you'll get a compiler error. With `RefCell<T>`, if you break these rules, your program will panic and exit.
+
+- Differences with `Box<T>`, `Rc<T>` or `RefCell<T>`
+
+    - `Rc<T>` enables multiple owners of the same data; `Box<T>` and `RefCell<T>` have single owners.
+
+    - `Box<T>` allows immutable or mutable borrows checked at **compile time**; `Rc<T>` allows only immutable borrows checked at **compile time**; `RefCell<T>` allows immutable or mutable borrows checked at **runtime**.
+
+    - Because `RefCell<T>` allows mutable borrows checked at runtime, you can mutate the value inside the `RefCell<T>` even when the `RefCell<T>` is immutable.
+
+
+### Reference Cycles Can Leak Memory
+
+- A simple example
+
+    ```rust
+    use crate::List::{Cons, Nil};
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    #[derive(Debug)]
+    enum List {
+        Cons(i32, RefCell<Rc<List>>),
+        Nil,
+    }
+
+    impl List {
+        fn tail(&self) -> Option<&RefCell<Rc<List>>> {
+            match self {
+                Cons(_, item) => Some(item),
+                Nil => None,
+            }
+        }
+    }
+
+    fn main() {
+        let a = Rc::new(Cons(5, RefCell::new(Rc::new(Nil))));
+
+        println!("a initial rc count = {}", Rc::strong_count(&a));
+        println!("a next item = {:?}", a.tail());
+
+        let b = Rc::new(Cons(10, RefCell::new(Rc::clone(&a))));
+
+        println!("a rc count after b creation = {}", Rc::strong_count(&a));
+        println!("b initial rc count = {}", Rc::strong_count(&b));
+        println!("b next item = {:?}", b.tail());
+
+        if let Some(link) = a.tail() {
+            *link.borrow_mut() = Rc::clone(&b);
+        }
+
+        println!("b rc count after changing a = {}", Rc::strong_count(&b));
+        println!("a rc count after changing a = {}", Rc::strong_count(&a));
+
+        // Uncomment the next line to see that we have a cycle;
+        // it will overflow the stack
+        // println!("a next item = {:?}", a.tail());
+    }
+    ```
+
+- Turning an `Rc<T>` into a `Weak<T>` to prevent reference cycles
 
