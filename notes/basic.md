@@ -148,6 +148,14 @@ ref: https://doc.rust-lang.org/stable/book/
       - [Extra Conditionals with Match Guards](#extra-conditionals-with-match-guards)
       - [`@Bindings`](#bindings)
   - [Advanced Features](#advanced-features)
+    - [Unsafe Rust](#unsafe-rust)
+      - [Dereferencing a raw pointer](#dereferencing-a-raw-pointer)
+      - [Calling an unsafe function or method](#calling-an-unsafe-function-or-method)
+      - [Creating a safe abstraction over unsafe code](#creating-a-safe-abstraction-over-unsafe-code)
+      - [Using `extern` functions to call external code](#using-extern-functions-to-call-external-code)
+      - [Accessing or modifying a mutable static variable](#accessing-or-modifying-a-mutable-static-variable)
+      - [Implementing an unsafe trait](#implementing-an-unsafe-trait)
+      - [Accessing fields of a union](#accessing-fields-of-a-union)
 
 ## cargo command
 
@@ -1604,7 +1612,7 @@ fn main() {
     1. take ownership: `FnOnce` consumes the variables it captures from its enclosing scope, known as the closure's environment. To consume the captured variables, the closure must take ownership of these variables and move them into the closure when it is defined. The `Once` part of the name represents the fact that the closure can't take ownership of the same variables more than once, so it can be called only once.
     2. borrow mutably: `FnMut` can change the environment because it mutably borrows values.
     3. borrow immediately: `Fn` borrows values from the environment immutably.
-    
+
 - When you create a closure, Rust infers which trait to use based on how the closure uses the values from the environment.
 
 ### Iterators
@@ -1628,9 +1636,9 @@ fn main() {
     ```rust
     pub trait Iterator {
         type Item;
-        
+
         fn next(&mut self) -> Option<Self::Item>;
-        
+
         // methods with default implementations elided
     }
     ```
@@ -2040,7 +2048,7 @@ impl AveragedCollection {
         self.list.push(value);
         self.update_average();
     }
-    
+
     pub fn remove(&mut self) -> Option<i32> {
         let result = self.list.pop();
         match result {
@@ -2051,14 +2059,14 @@ impl AveragedCollection {
             None => None,
         }
     }
-    
+
     pub fn average(&self) -> f64 {
         self.average
     }
-    
+
     fn update_average(&mut self) {
         let total: i32 = self.list.iter().sum();
-        self.average = total as f64 / self.list.len() as f64;        
+        self.average = total as f64 / self.list.len() as f64;
     }
 }
 ```
@@ -2427,3 +2435,134 @@ match msg {
 
 ## Advanced Features
 
+- Unsafe Rust: how to opt out of some of Rust's guarantees and take responsibility for manually upholding those guarantees.
+
+- Advanced traits: associated types, default tye parameters, fully qualified syntax, supertraits, and the newtype pattern in relation to traits
+
+- Advanced types: more about the newtype pattern, type aliases, the never type, and dynamicaly sized types
+
+- Advanced functions and closures: function pointers and returning closures
+
+- Macros: ways to define code that defines more code at compile time
+
+### Unsafe Rust
+
+- To switch to unsafe Rust, use the `unsafe` keyword and then start a new block that holds the unsafe code. you can:
+
+    - Dereference a raw pointer
+    - Call an unsafe function or method
+    - Access or modify a mutable static variable
+    - Implement an unsafe trait
+    - Access fileds of `union`S
+
+- It's important to understand that `unsafe` **doesn't** turn off the borrow checker or disable any other of Rust's safety checks: if you use a reference in unsafe code, it will still be checked. The `unsafe` keyword only gives you access to these five features that are then not checked by the compiler for memory safety.
+
+#### Dereferencing a raw pointer
+
+-  Unsafe Rust has two new types called **raw pointers** that re similar to references, `*const T` and `*mut T`.
+
+- Different from references and smart pointers, raw pointers:
+
+    - Are allowed to ignore the borrowing rules by having both immutable and mutable pointers or multiple mutable pointers to the same location
+    - Aren't guaranteed to point to valid memory
+    - Are allowed to be null
+    - Don't implement any automatic cleanup
+
+- We can create raw pointers in safe code, but we can't **dereference** raw pointers and read the data being pointed to.
+
+```rust
+let mut num = 5;
+
+let r1 = &num as *const i32;
+let r2 = &mut num as *mut i32;
+
+unsafe {
+    println!("r1 is: {}", *r1);
+    println!("r2 is: {}", *r2);
+}
+```
+
+#### Calling an unsafe function or method
+
+- Unsafe functions and methods look exactly like regular functions and methods, but they have an extra `unsafe` before the rest of the definition.
+
+- Bodies of unsafe functions are effectively `unsafe` blocks, so to perform other unsafe operations within an unsafe function, we don't need to add another `unsafe` block.
+
+```rust
+unsafe fn dangerous() {}
+
+unsafe {
+    dangerous();
+}
+```
+
+#### Creating a safe abstraction over unsafe code
+
+- A function contains unsafe code doesn't mean we need to mark the entire function as unsafe.
+
+#### Using `extern` functions to call external code
+
+```rust
+extern "C" {
+    fn abs(input: i32) -> i32;
+}
+
+fn main() {
+    unsafe {
+        println!("Absolute value of -3 according to C: {}", abs(-3));
+    }
+}
+```
+
+#### Accessing or modifying a mutable static variable
+
+- In Rust, global variables are called **static variables**.
+
+```rust
+static HELLO_WORLD: &str = "Hello, world!";
+
+fn main() {
+    println!("name is: {}", HELLO_WORLD);
+}
+```
+
+- Differences between constants and static variables:
+
+    - Values in a static variable have a fixed address in memory. Using the value will always access the same data. Constants, on the other hand, are allowed to duplicate their data whenever they’re used.
+    - Static variables can be mutable. Accessing and modifying mutable static variables is **unsafe**.
+
+```rust
+static mut COUNTER: u32 = 0;
+
+fn add_to_count(inc: u32) {
+    unsafe {
+        COUNTER += inc;
+    }
+}
+
+fn main() {
+    add_to_count(3);
+
+    unsafe {
+        println!("COUNTER: {}", COUNTER);
+    }
+}
+```
+
+#### Implementing an unsafe trait
+
+- A trait is unsafe when at least one of its methods has some invariant that the compiler can't verify.
+
+```rust
+unsafe trait Foo {
+    // methods go here
+}
+
+unsafe impl Foo for i32 {
+    // method implementations go here
+}
+```
+
+#### Accessing fields of a union
+
+- A `union` is similar to a `struct`, but only one declared filed is used in a particular instance at one time. Accessing union fields is unsafe because Rust can't guarantee the type of the data currently being stored in the union instance.
