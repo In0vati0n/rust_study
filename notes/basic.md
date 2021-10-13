@@ -126,6 +126,9 @@ ref: https://doc.rust-lang.org/stable/book/
     - [Using Message Passing to Transfer Data Between Threads](#using-message-passing-to-transfer-data-between-threads)
     - [Shared-State Concurrency](#shared-state-concurrency)
     - [Extensible Concurrency with the `Sync` and `Send` Traits](#extensible-concurrency-with-the-sync-and-send-traits)
+  - [Object Oriented Programming Features of Rust](#object-oriented-programming-features-of-rust)
+    - [Characteristics of Object-Oriented Languages](#characteristics-of-object-oriented-languages)
+    - [Using Trait Objects that allow for values of different types](#using-trait-objects-that-allow-for-values-of-different-types)
 
 ## cargo command
 
@@ -2040,4 +2043,15 @@ impl AveragedCollection {
     }
 }
 ```
+
+### Using Trait Objects that allow for values of different types
+
+- When we use trait objects, Rust must use **dynamic dispatch**. The compiler doesn't know all the types that might be used with the code that is using trait objects, so it doesn't know which method implemented on which type to call. Instead, at runtime, Rust uses the pointers inside the trait object to know which method to call.
+
+- Dynamic dispatch also prevents the compiler from choosing to inline a method's code, which in turn prevents some optimizations.
+
+- A trait is object safe if all the methods defined in the trait have the following properties:
+
+    - The return type isn't `Self`.
+    - There are no generic type parameters.
 
