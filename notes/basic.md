@@ -2566,3 +2566,161 @@ unsafe impl Foo for i32 {
 #### Accessing fields of a union
 
 - A `union` is similar to a `struct`, but only one declared filed is used in a particular instance at one time. Accessing union fields is unsafe because Rust can't guarantee the type of the data currently being stored in the union instance.
+
+### Advanced Traits
+
+#### Specifying placeholder types in trait definition with associated types
+
+- **Associated types** connect a type placeholder with a trait such that the trait method definitions can use these placeholder types in their signatures.
+
+```rust
+pub trait Iterator {
+    type Item;
+    
+    fn next(&mut self) -> Option<Self::Item>;
+}
+```
+
+#### Default generic type parameters and operator overloading
+
+- Rust doesn't allow you to create your own operators or overload arbitrary operators. But you can overload the operations and corresponding traits listed in `std::ops` by implementing the traits associated with the operator.
+
+- You'll use default type parameters in two main ways:
+
+    - To extend a type without breaking existing code.
+    - To allow customization in specific cases most users won't need.
+
+```rust
+use std::ops::Add;
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+impl Add for Point {
+    type Output = Point;
+
+    fn add(self, other: Point) -> Point {
+        Point {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
+}
+
+fn main() {
+    assert_eq!(
+        Point { x: 1, y: 0 } + Point { x: 2, y: 3 },
+        Point { x: 3, y: 3 }
+    );
+}
+```
+
+#### Fully qualified syntax for disambiguation: call methods with the same name
+
+- Fully qualified syntax is defined as follows:
+
+    ```rust
+    <Type as Trait>::function(receiver_if_method, next_arg, ...)
+    ```
+    ```rust
+trait Pilot {
+    fn fly(&self);
+}
+
+trait Wizard {
+    fn fly(&self);
+}
+
+struct Human;
+
+impl Pilot for Human {
+    fn fly(&self) {
+        println!("This is your captain speaking.");
+    }
+}
+
+impl Wizard for Human {
+    fn fly(&self) {
+        println!("Up!");
+    }
+}
+
+impl Human {
+    fn fly(&self) {
+        println!("*waving arms furiously*");
+    }
+}
+
+fn main() {
+    let person = Human;
+    Pilot::fly(&person);
+    Wizard::fly(&person);
+    person.fly();
+}
+```
+
+```rust
+trait Animal {
+    fn baby_name() -> String;
+}
+
+struct Dog;
+
+impl Dog {
+    fn baby_name() -> String {
+        String::from("Spot")
+    }
+}
+
+impl Animal for Dog {
+    fn baby_name() -> String {
+        String::from("puppy")
+    }
+}
+
+fn main() {
+    println!("A baby dog is called a {}", <Dog as Animal>::baby_name());
+}
+```
+
+#### Using supertraits to require one trait's functionality within another trait
+
+- The trait you rely on is a **supertrait** of the trait you're implementing.
+
+```rust
+use std::fmt;
+
+trait OutlinePrint: fmt::Display {
+    fn outline_print(&self) {
+        let output = self.to_string();
+        let len = output.len();
+        println!("{}", "*".repeat(len + 4));
+        println!("*{}*", " ".repeat(len + 2));
+        println!("* {} *", output);
+        println!("*{}*", " ".repeat(len + 2));
+        println!("{}", "*".repeat(len + 4));
+    }
+}
+```
+
+#### Using the newtype pattern to implement external traits on external types
+
+- Newtype pattern: involving creating a new type in a tuple struct.
+
+- If we wanted the new type to have every method the inner type has, implementing the `Deref` trait on the wrapper type to return the inner type would be a solution. If we don't want the wrapper type to have all the methods of the inner type, we would have to implement just the methods we do want manually.
+
+```rust
+use std::fmt;
+
+struct Wrapper(Vec<String>);
+
+impl fmt::Display for Wrapper {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "[{}]", self.0.join(", "))
+    }
+}
+```
+
