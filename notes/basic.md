@@ -2636,7 +2636,8 @@ fn main() {
     ```rust
     <Type as Trait>::function(receiver_if_method, next_arg, ...)
     ```
-    ```rust
+    
+```rust
 trait Pilot {
     fn fly(&self);
 }
