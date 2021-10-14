@@ -129,6 +129,7 @@ ref: https://doc.rust-lang.org/stable/book/
   - [Object Oriented Programming Features of Rust](#object-oriented-programming-features-of-rust)
     - [Characteristics of Object-Oriented Languages](#characteristics-of-object-oriented-languages)
     - [Using Trait Objects that allow for values of different types](#using-trait-objects-that-allow-for-values-of-different-types)
+    - [Implementing an Object-Oriented Design Pattern](#implementing-an-object-oriented-design-pattern)
 
 ## cargo command
 
@@ -2054,4 +2055,6 @@ impl AveragedCollection {
 
     - The return type isn't `Self`.
     - There are no generic type parameters.
+
+### Implementing an Object-Oriented Design Pattern
 
