@@ -163,6 +163,13 @@ ref: https://doc.rust-lang.org/stable/book/
       - [Fully qualified syntax for disambiguation: call methods with the same name](#fully-qualified-syntax-for-disambiguation-call-methods-with-the-same-name)
       - [Using supertraits to require one trait's functionality within another trait](#using-supertraits-to-require-one-traits-functionality-within-another-trait)
       - [Using the newtype pattern to implement external traits on external types](#using-the-newtype-pattern-to-implement-external-traits-on-external-types)
+    - [Advanced Types](#advanced-types)
+      - [Creating Type Synonyms with Type Aliases](#creating-type-synonyms-with-type-aliases)
+      - [The Never Type that Never Returns](#the-never-type-that-never-returns)
+      - [Dynamically Sized Types and the Sized Trait](#dynamically-sized-types-and-the-sized-trait)
+    - [Advanced Functions and Closures](#advanced-functions-and-closures)
+      - [Function Pointers](#function-pointers)
+      - [Returning Closures](#returning-closures)
 
 ## cargo command
 
@@ -2733,5 +2740,65 @@ impl fmt::Display for Wrapper {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "[{}]", self.0.join(", "))
     }
+}
+```
+
+### Advanced Types
+
+#### Creating Type Synonyms with Type Aliases
+
+- Rust provides the ability to declare a **type alias** to give an existing type another name.
+
+```rust
+type Kilometers = i32;
+
+type Thunk = Box<dyn Fn() + Send + 'static>;
+
+type Result<T> = std::result::Result<T, std::io::Error>;
+```
+
+#### The Never Type that Never Returns
+
+- Rust has a special type named `!` that's known in type theory lingo as the *empty type* because it has no values.
+
+- Functions that return never are called *divergin functions*.
+
+```rust
+fn bar() -> ! {
+    // --snip--
+}
+```
+
+#### Dynamically Sized Types and the Sized Trait
+
+- Dynamically sized types: sometimes referred to as DSTs or unsized types, these types let us write code using values whoes size we can know only at runtime.
+
+- Every trait is a dynamically sized type we can refer to by using the name of the trait.
+
+- To work with DSTs, Rust has a particular trait called the `Sized` trait to determine whether or not a type's size is known at compile time.
+
+### Advanced Functions and Closures
+
+#### Function Pointers
+
+- Functions coerce to the type `fn`, not to be confused with the `Fn` closure trait. The `fn` type is called a *function pointer*.
+
+```rust
+fn add_one(x: i32) -> i32 {
+    x + 1
+}
+
+fn do_twice(f: fn(i32) -> i32, arg: i32) -> i32 {
+    f(arg) + f(arg)
+}
+```
+
+- Function pointers implement all three of the closure traits(`Fn`, `FnMut`, and `FnOnce`), so you can always pass a function pointer as an argument for a function that expects a closure.
+
+#### Returning Closures
+
+```rust
+fn returns_closure() -> Box<dyn Fn(i32) -> i32> {
+    Box::new(|x| x + 1)
 }
 ```
