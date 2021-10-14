@@ -173,6 +173,7 @@ ref: https://doc.rust-lang.org/stable/book/
     - [Macros](#macros)
       - [The difference between macros and functions](#the-difference-between-macros-and-functions)
       - [Delcarative macros with `macro_rules!` for general metaprogramming](#delcarative-macros-with-macro_rules-for-general-metaprogramming)
+      - [Procedural macros for generating code from attributes](#procedural-macros-for-generating-code-from-attributes)
 
 ## cargo command
 
@@ -2838,3 +2839,41 @@ macro_rules! vec {
     };
 }
 ```
+
+#### Procedural macros for generating code from attributes
+
+- Procedural macros accept some code as an input, operate on that code, and produce some code as an output rather than matching against patterns and replacing the mode with other code as declarative macros do.
+
+```rust
+use proc_macro;
+
+#[some_attribute]
+pub fn some_name(input: TokenStream) -> TokenStream {
+}
+```
+
+- Write a custom `derive` macro, see [hello_macro](../projects/hello_macro) and [hello_macro_derive](../projects/hello_macro_derive)
+
+- Attribute-like macros
+
+    ```rust
+    #[route(GET, "/")]
+    fn index() {
+
+    ...
+
+    #[proc_macro_attribute]
+    pub fn route(attr: TokenStream, item: TokenStream) -> TokenStream {
+    ```
+
+- Function-like macros
+
+    ```rust
+    let sql = sql!(SELECT * FROM posts WHERE id=1);
+
+    ...
+
+    #[proc_macro]
+    pub fn sql(input: TokenStream) -> TokenStream {
+    ```
+
