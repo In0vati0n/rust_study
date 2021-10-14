@@ -170,6 +170,9 @@ ref: https://doc.rust-lang.org/stable/book/
     - [Advanced Functions and Closures](#advanced-functions-and-closures)
       - [Function Pointers](#function-pointers)
       - [Returning Closures](#returning-closures)
+    - [Macros](#macros)
+      - [The difference between macros and functions](#the-difference-between-macros-and-functions)
+      - [Delcarative macros with `macro_rules!` for general metaprogramming](#delcarative-macros-with-macro_rules-for-general-metaprogramming)
 
 ## cargo command
 
@@ -2800,5 +2803,38 @@ fn do_twice(f: fn(i32) -> i32, arg: i32) -> i32 {
 ```rust
 fn returns_closure() -> Box<dyn Fn(i32) -> i32> {
     Box::new(|x| x + 1)
+}
+```
+
+### Macros
+
+- The term *macro* refers to a family of features in Rust: *declarative* macros with `macro_rules!` annd three kinds of *procedural* macros:
+
+    - Custom `#[derive]` macros that specify code added with the `derive` attribute used on structs and enums
+    - Attribute-like macros that define custom attributes usable on any item
+    - Function-like macros that look like function calls but operate on the tokens specified as thier argument
+
+#### The difference between macros and functions
+
+- Macros are a way of writing code that writes other code, which is known as *metaprogramming*.
+
+- You must define macros or bring them into scope *before* you call them in a file, as opposed to functions you can define anywhere and call anywhere.
+
+#### Delcarative macros with `macro_rules!` for general metaprogramming
+
+- Start the macro definition with `macro_rules!` and the name of macro we're defining **without** the exclamation mark(`!`).
+
+```rust
+#[macro_export]
+macro_rules! vec {
+    ( $( $x:expr ),* ) => {
+        {
+            let mut temp_vec = Vec::new();
+            $(
+                temp_vec.push($x);
+            )*
+            temp_vec
+        }
+    };
 }
 ```
