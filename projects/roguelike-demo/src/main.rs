@@ -1,28 +1,26 @@
-use quicksilver::{
-    geom::{Rectangle, Vector},
-    graphics::Color,
-    run, Graphics, Input, Result, Settings, Window,
-};
+use quicksilver::prelude::*;
 
-fn main() {
-    run(
-        Settings {
-            title: "Roguelike",
-            size: Vector { x: 800.0, y: 600.0 },
-            ..Settings::default()
-        },
-        app,
-    );
-}
+struct Game;
 
-async fn app(window: Window, mut gfx: Graphics, mut input: Input) -> Result<()> {
-    gfx.clear(Color::WHITE);
-
-    let rect = Rectangle::new(Vector::new(350.0, 100.0), Vector::new(100.0, 100.0));
-    gfx.fill_rect(&rect, Color::BLUE);
-    gfx.stroke_rect(&rect, Color::RED);
-    gfx.present(&window)?;
-    loop {
-        while let Some(_) = input.next_event().await {}
+impl State for Game {
+    /// Load the assets and initialise the game
+    fn new() -> Result<Self> {
+        Ok(Self)
     }
+
+    /// Process keyboard and mouse, update the game state
+    fn update(&mut self, window: &mut Window) -> Result<()> {
+        Ok(())
+    }
+
+    /// Draw stuff on the screen
+    fn draw(&mut self, window: &mut Window) -> Result<()> {
+        Ok(())
+    }
+}
+fn main() {
+    let settings = Settings {
+        ..Default::default()
+    };
+    run::<Game>("Quicksilver Roguelike", Vector::new(800, 600), settings);
 }
