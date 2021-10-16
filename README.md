@@ -10,3 +10,6 @@
 
 - [quicksliver-roguelike](https://github.com/tomassedovic/quicksilver-roguelike/blob/master/README.md)
   - [Project](./projects/roguelike-demo)
+  
+- [NES Simulator](https://bugzmanov.github.io/nes_ebook.html)
+  - [Project](./projects/nes-simulator)
