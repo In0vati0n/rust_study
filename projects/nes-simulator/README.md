@@ -2,4 +2,4 @@
 
 A simple NES simulator writen by Rust.
 
-*ref: https://bugzmanov.github.io/nes_ebook.html*
+*ref: https://github.com/bugzmanov/nes_ebook*
