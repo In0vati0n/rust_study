@@ -2,6 +2,7 @@ pub mod bus;
 pub mod cartridge;
 pub mod cpu;
 pub mod opcodes;
+mod trace;
 
 use bus::Bus;
 use cartridge::Rom;
