@@ -1,3 +1,4 @@
+use crate::cartridge::Rom;
 use crate::cpu::Mem;
 
 //  _______________ $10000  _______________
@@ -34,13 +35,35 @@ const PPU_REGISTERS_MIRRORS_END: u16 = 0x3FFF;
 
 pub struct Bus {
     cpu_vram: [u8; 2048],
+    rom: Rom,
+    enable_write_rom: bool,
 }
 
 impl Bus {
-    pub fn new() -> Self {
+    pub fn new(rom: Rom, enable_write_rom: bool) -> Self {
         Bus {
             cpu_vram: [0; 2048],
+            rom,
+            enable_write_rom,
         }
+    }
+
+    fn read_prg_rom(&self, mut addr: u16) -> u8 {
+        addr -= 0x8000;
+        if self.rom.prg_rom.len() == 0x4000 && addr >= 0x4000 {
+            // mirror if needed
+            addr = addr % 0x4000;
+        }
+        self.rom.prg_rom[addr as usize]
+    }
+
+    fn write_prg_rom(&mut self, mut addr: u16, data: u8) {
+        addr -= 0x8000;
+        if self.rom.prg_rom.len() == 0x4000 && addr >= 0x4000 {
+            // mirror if needed
+            addr = addr % 0x4000;
+        }
+        self.rom.prg_rom[addr as usize] = data;
     }
 }
 
@@ -55,6 +78,7 @@ impl Mem for Bus {
                 let _mirror_down_addr = addr & 0b0010_0000__0000_0111;
                 todo!("PPU is not supported yet")
             }
+            0x8000..=0xFFFF => self.read_prg_rom(addr),
             _ => {
                 println!("Ignoring mem access at {}", addr);
                 0
@@ -71,6 +95,13 @@ impl Mem for Bus {
             PPU_REGISTERS..=PPU_REGISTERS_MIRRORS_END => {
                 let _mirror_down_addr = addr & 0b0010_0000__0000_0111;
                 todo!("PPU is not supported yet");
+            }
+            0x8000..=0xFFFF => {
+                if self.enable_write_rom {
+                    self.write_prg_rom(addr, data);
+                } else {
+                    panic!("Attempt to write to Cartridge ROM space")
+                }
             }
             _ => {
                 println!("Ignoring mem write-access at {}", addr);
