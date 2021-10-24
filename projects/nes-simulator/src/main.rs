@@ -4,7 +4,6 @@ pub mod cpu;
 pub mod opcodes;
 pub mod ppu;
 pub mod render;
-pub mod tiles_viewer;
 pub mod trace;
 
 use bus::Bus;
@@ -12,6 +11,7 @@ use cartridge::Rom;
 use cpu::Mem;
 use cpu::CPU;
 use rand::Rng;
+use trace::trace;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -116,7 +116,7 @@ fn main() {
     let bytes: Vec<u8> = std::fs::read("cartridge/pacman.nes").unwrap();
     let rom = Rom::new(&bytes).unwrap();
 
-    let bus = Bus::new(rom);
+    let bus = Bus::new(rom, false);
     let mut cpu = CPU::new(bus);
 
     cpu.reset();
