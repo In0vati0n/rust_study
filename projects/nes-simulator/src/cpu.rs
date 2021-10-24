@@ -109,6 +109,7 @@ mod interrupt {
         pub(super) b_flag_mask: u8,
         pub(super) cpu_cycles: u8,
     }
+
     pub(super) const NMI: Interrupt = Interrupt {
         itype: InterruptType::NMI,
         vector_addr: 0xfffA,
@@ -210,8 +211,8 @@ impl<'a> CPU<'a> {
     }
 
     pub fn run_with_callback<F>(&mut self, mut callback: F)
-    where
-        F: FnMut(&mut CPU),
+        where
+            F: FnMut(&mut CPU),
     {
         let ref opcodes: HashMap<u8, &'static opcodes::OpCode> = *opcodes::OPCODES_MAP;
 
@@ -877,10 +878,10 @@ impl CPU<'_> {
         let sum = self.register_a as u16
             + data as u16
             + (if self.status.contains(CpuFlags::CARRY) {
-                1
-            } else {
-                0
-            }) as u16;
+            1
+        } else {
+            0
+        }) as u16;
 
         let carry = sum > 0xff;
         if carry {
@@ -1180,11 +1181,10 @@ impl CPU<'_> {
 mod test {
     use super::*;
     use crate::cartridge::test;
-    use crate::ppu::NesPPU;
 
     #[test]
     fn test_0xa9_lda_immidiate_load_data() {
-        let bus = Bus::new(test::test_rom(), |ppu: &NesPPU| {}, true);
+        let bus = Bus::new(test::test_rom(), |ppu, joypad| {}, true);
         let mut cpu = CPU::new(bus);
         cpu.load_and_run(vec![0xa9, 0x05, 0x00]);
         assert_eq!(cpu.register_a, 5);
@@ -1194,9 +1194,9 @@ mod test {
 
     #[test]
     fn test_0xaa_tax_move_a_to_x() {
-        let bus = Bus::new(test::test_rom(), |ppu: &NesPPU| {}, true);
+        let bus = Bus::new(test::test_rom(), |ppu, joypad| {}, true);
         let mut cpu = CPU::new(bus);
-        cpu.load(vec![0xa9, 0x0a, 0xaa, 0x00]);
+        cpu.load(vec![0xaa, 0x00]);
         cpu.reset();
         cpu.register_a = 10;
         cpu.run();
@@ -1206,7 +1206,7 @@ mod test {
 
     #[test]
     fn test_5_ops_working_together() {
-        let bus = Bus::new(test::test_rom(), |ppu: &NesPPU| {}, true);
+        let bus = Bus::new(test::test_rom(), |ppu, joypad| {}, true);
         let mut cpu = CPU::new(bus);
         cpu.load_and_run(vec![0xa9, 0xc0, 0xaa, 0xe8, 0x00]);
 
@@ -1215,7 +1215,7 @@ mod test {
 
     #[test]
     fn test_inx_overflow() {
-        let bus = Bus::new(test::test_rom(), |ppu: &NesPPU| {}, true);
+        let bus = Bus::new(test::test_rom(), |ppu, joypad| {}, true);
         let mut cpu = CPU::new(bus);
         cpu.load(vec![0xe8, 0xe8, 0x00]);
         cpu.reset();
@@ -1227,7 +1227,7 @@ mod test {
 
     #[test]
     fn test_lda_from_memory() {
-        let bus = Bus::new(test::test_rom(), |ppu: &NesPPU| {}, true);
+        let bus = Bus::new(test::test_rom(), |ppu, joypad| {}, true);
         let mut cpu = CPU::new(bus);
         cpu.load(vec![0xa5, 0x10, 0x00]);
         cpu.reset();

@@ -1,5 +1,6 @@
 use crate::cartridge::Rom;
 use crate::cpu::Mem;
+use crate::joypad::Joypad;
 use crate::ppu::{NesPPU, PPU};
 
 //  _______________ $10000  _______________
@@ -40,15 +41,16 @@ pub struct Bus<'call> {
     ppu: NesPPU,
 
     cycles: usize,
-    gameloop_callback: Box<dyn FnMut(&NesPPU) + 'call>,
+    gameloop_callback: Box<dyn FnMut(&NesPPU, &mut Joypad) + 'call>,
+    joypad1: Joypad,
 
     enable_write_rom: bool,
 }
 
 impl<'a> Bus<'a> {
     pub fn new<'call, F>(rom: Rom, gameloop_callback: F, enable_write_rom: bool) -> Bus<'call>
-    where
-        F: FnMut(&NesPPU) + 'call,
+        where
+            F: FnMut(&NesPPU, &mut Joypad) + 'call,
     {
         let ppu = NesPPU::new(rom.chr_rom, rom.screen_mirroring);
         Bus {
@@ -57,6 +59,7 @@ impl<'a> Bus<'a> {
             ppu,
             cycles: 0,
             gameloop_callback: Box::from(gameloop_callback),
+            joypad1: Joypad::new(),
             enable_write_rom,
         }
     }
@@ -65,7 +68,7 @@ impl<'a> Bus<'a> {
         self.cycles += cycles as usize;
         let new_frame = self.ppu.tick(cycles * 3);
         if new_frame {
-            (self.gameloop_callback)(&self.ppu);
+            (self.gameloop_callback)(&self.ppu, &mut self.joypad1);
         }
     }
 
@@ -113,8 +116,7 @@ impl Mem for Bus<'_> {
             }
 
             0x4016 => {
-                // ignore joypad 1;
-                0
+                self.joypad1.read()
             }
 
             0x4017 => {
@@ -172,7 +174,7 @@ impl Mem for Bus<'_> {
             }
 
             0x4016 => {
-                // ignore joypad 1;
+                self.joypad1.write(data);
             }
 
             0x4017 => {
@@ -221,7 +223,7 @@ mod test {
 
     #[test]
     fn test_mem_read_write_to_ram() {
-        let mut bus = Bus::new(test::test_rom(), |ppu: &NesPPU| {}, false);
+        let mut bus = Bus::new(test::test_rom(), |ppu, joypad| {}, false);
         bus.mem_write(0x01, 0x55);
         assert_eq!(bus.mem_read(0x01), 0x55);
     }
