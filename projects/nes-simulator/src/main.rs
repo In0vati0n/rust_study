@@ -13,6 +13,8 @@ use cpu::CPU;
 use rand::Rng;
 use trace::trace;
 
+use crate::ppu::NesPPU;
+use crate::render::frame::Frame;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
@@ -113,29 +115,36 @@ fn main() {
         .unwrap();
 
     //load the game
-    let bytes: Vec<u8> = std::fs::read("cartridge/pacman.nes").unwrap();
+    let bytes: Vec<u8> = std::fs::read("cartridge/Super Mario Bros.nes").unwrap();
     let rom = Rom::new(&bytes).unwrap();
 
-    let bus = Bus::new(rom, false);
-    let mut cpu = CPU::new(bus);
-
-    cpu.reset();
+    let mut frame = Frame::new();
 
     // run the game cycle
-    cpu.run_with_callback(move |cpu| {
-        println!("{}", trace(cpu));
-        // handle_user_input(cpu, &mut event_pump);
+    let bus = Bus::new(
+        rom,
+        |ppu: &NesPPU| {
+            render::render(ppu, &mut frame);
+            texture.update(None, &frame.data, 256 * 3).unwrap();
 
-        // cpu.mem_write(0xfe, rng.gen_range(1, 16));
+            canvas.copy(&texture, None, None).unwrap();
 
-        // if read_screen_state(cpu, &mut screen_state) {
-        //     texture.update(None, &screen_state, 32 * 3).unwrap();
+            canvas.present();
+            for event in event_pump.poll_iter() {
+                match event {
+                    Event::Quit { .. }
+                    | Event::KeyDown {
+                        keycode: Some(Keycode::Escape),
+                        ..
+                    } => std::process::exit(0),
+                    _ => { /* do nothing */ }
+                }
+            }
+        },
+        false,
+    );
 
-        //     canvas.copy(&texture, None, None).unwrap();
-
-        //     canvas.present();
-        // }
-
-        // ::std::thread::sleep(std::time::Duration::new(0, 70_000));
-    });
+    let mut cpu = CPU::new(bus);
+    cpu.reset();
+    cpu.run();
 }
