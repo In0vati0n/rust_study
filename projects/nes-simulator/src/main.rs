@@ -3,6 +3,8 @@ pub mod cartridge;
 pub mod cpu;
 pub mod opcodes;
 pub mod ppu;
+pub mod render;
+pub mod tiles_viewer;
 pub mod trace;
 
 use bus::Bus;
@@ -96,45 +98,44 @@ fn main() {
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
     let window = video_subsystem
-        .window("Snake game", (32.0 * 10.0) as u32, (32.0 * 10.0) as u32)
+        .window("Tile viewer", (256.0 * 3.0) as u32, (240.0 * 3.0) as u32)
         .position_centered()
         .build()
         .unwrap();
 
     let mut canvas = window.into_canvas().present_vsync().build().unwrap();
     let mut event_pump = sdl_context.event_pump().unwrap();
-    canvas.set_scale(10.0, 10.0).unwrap();
+    canvas.set_scale(3.0, 3.0).unwrap();
 
     let creator = canvas.texture_creator();
     let mut texture = creator
-        .create_texture_target(PixelFormatEnum::RGB24, 32, 32)
+        .create_texture_target(PixelFormatEnum::RGB24, 256, 240)
         .unwrap();
 
     //load the game
-    let bytes: Vec<u8> = std::fs::read("cartridge/snake.nes").unwrap();
+    let bytes: Vec<u8> = std::fs::read("cartridge/pacman.nes").unwrap();
     let rom = Rom::new(&bytes).unwrap();
 
-    let bus = Bus::new(rom, false);
+    let bus = Bus::new(rom);
     let mut cpu = CPU::new(bus);
-    cpu.reset();
 
-    let mut screen_state = [0 as u8; 32 * 3 * 32];
-    let mut rng = rand::thread_rng();
+    cpu.reset();
 
     // run the game cycle
     cpu.run_with_callback(move |cpu| {
-        handle_user_input(cpu, &mut event_pump);
+        println!("{}", trace(cpu));
+        // handle_user_input(cpu, &mut event_pump);
 
-        cpu.mem_write(0xfe, rng.gen_range(1, 16));
+        // cpu.mem_write(0xfe, rng.gen_range(1, 16));
 
-        if read_screen_state(cpu, &mut screen_state) {
-            texture.update(None, &screen_state, 32 * 3).unwrap();
+        // if read_screen_state(cpu, &mut screen_state) {
+        //     texture.update(None, &screen_state, 32 * 3).unwrap();
 
-            canvas.copy(&texture, None, None).unwrap();
+        //     canvas.copy(&texture, None, None).unwrap();
 
-            canvas.present();
-        }
+        //     canvas.present();
+        // }
 
-        ::std::thread::sleep(std::time::Duration::new(0, 70_000));
+        // ::std::thread::sleep(std::time::Duration::new(0, 70_000));
     });
 }
