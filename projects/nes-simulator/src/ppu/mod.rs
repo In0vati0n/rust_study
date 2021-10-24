@@ -23,7 +23,7 @@ pub struct NesPPU {
 
     internal_data_buf: u8,
 
-    scanline: u16,
+    pub scanline: u16,
     cycles: usize,
     pub nmi_interrupt: Option<u8>,
 }
@@ -91,6 +91,10 @@ impl NesPPU {
     pub fn tick(&mut self, cycles: u8) -> bool {
         self.cycles += cycles as usize;
         if self.cycles >= 341 {
+            if self.is_sprite_0_hit(self.cycles) {
+                self.status.set_sprite_zero_hit(true);
+            }
+
             self.cycles = self.cycles - 341;
             self.scanline += 1;
 
@@ -114,12 +118,18 @@ impl NesPPU {
         return false;
     }
 
-    fn poll_nmi_interrupt(&mut self) -> Option<u8> {
+    pub fn poll_nmi_interrupt(&mut self) -> Option<u8> {
         self.nmi_interrupt.take()
     }
 
     fn increment_vram_addr(&mut self) {
         self.addr.increment(self.ctrl.vram_addr_increment());
+    }
+
+    fn is_sprite_0_hit(&self, cycle: usize) -> bool {
+        let y = self.oam_data[0] as usize;
+        let x = self.oam_data[3] as usize;
+        (y == self.scanline as usize) && x <= cycle && self.mask.show_sprites()
     }
 }
 
@@ -168,7 +178,7 @@ impl PPU for NesPPU {
     fn write_to_data(&mut self, value: u8) {
         let addr = self.addr.get();
         match addr {
-            0..=0x1fff => println!("attempt to write to chr rom space {}", addr),
+            0..=0x1fff => println!("attempt to write to chr rom space {:x}", addr),
             0x2000..=0x2fff => {
                 self.vram[self.mirror_vram_addr(addr) as usize] = value;
             }

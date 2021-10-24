@@ -30,14 +30,14 @@ bitflags! {
 const STACK: u16 = 0x0100;
 const STACK_RESET: u8 = 0xfd;
 
-pub struct CPU {
+pub struct CPU<'a> {
     pub register_a: u8,
     pub register_x: u8,
     pub register_y: u8,
     pub status: CpuFlags,
     pub program_counter: u16,
     pub stack_pointer: u8,
-    pub bus: Bus,
+    pub bus: Bus<'a>,
 }
 
 #[derive(Debug)]
@@ -74,7 +74,7 @@ pub trait Mem {
     }
 }
 
-impl Mem for CPU {
+impl Mem for CPU<'_> {
     fn mem_read(&mut self, addr: u16) -> u8 {
         self.bus.mem_read(addr)
     }
@@ -100,6 +100,7 @@ mod interrupt {
     #[derive(PartialEq, Eq)]
     pub enum InterruptType {
         NMI,
+        BRK,
     }
 
     #[derive(PartialEq, Eq)]
@@ -109,16 +110,24 @@ mod interrupt {
         pub(super) b_flag_mask: u8,
         pub(super) cpu_cycles: u8,
     }
+
     pub(super) const NMI: Interrupt = Interrupt {
         itype: InterruptType::NMI,
         vector_addr: 0xfffA,
         b_flag_mask: 0b00100000,
         cpu_cycles: 2,
     };
+
+    pub(super) const BRK: Interrupt = Interrupt {
+        itype: InterruptType::BRK,
+        vector_addr: 0xfffe,
+        b_flag_mask: 0b00110000,
+        cpu_cycles: 1,
+    };
 }
 
-impl CPU {
-    pub fn new(bus: Bus) -> Self {
+impl<'a> CPU<'a> {
+    pub fn new(bus: Bus) -> CPU {
         CPU {
             register_a: 0,
             register_x: 0,
@@ -210,8 +219,8 @@ impl CPU {
     }
 
     pub fn run_with_callback<F>(&mut self, mut callback: F)
-    where
-        F: FnMut(&mut CPU),
+        where
+            F: FnMut(&mut CPU),
     {
         let ref opcodes: HashMap<u8, &'static opcodes::OpCode> = *opcodes::OPCODES_MAP;
 
@@ -751,7 +760,7 @@ impl CPU {
     }
 }
 
-impl CPU {
+impl CPU<'_> {
     fn sub_from_register_a(&mut self, data: u8) {
         self.add_to_register_a(((data as i8).wrapping_neg().wrapping_sub(1)) as u8);
     }
@@ -877,10 +886,10 @@ impl CPU {
         let sum = self.register_a as u16
             + data as u16
             + (if self.status.contains(CpuFlags::CARRY) {
-                1
-            } else {
-                0
-            }) as u16;
+            1
+        } else {
+            0
+        }) as u16;
 
         let carry = sum > 0xff;
         if carry {
@@ -1183,7 +1192,7 @@ mod test {
 
     #[test]
     fn test_0xa9_lda_immidiate_load_data() {
-        let bus = Bus::new(test::test_rom(), true);
+        let bus = Bus::new(test::test_rom(), |ppu, joypad| {}, true);
         let mut cpu = CPU::new(bus);
         cpu.load_and_run(vec![0xa9, 0x05, 0x00]);
         assert_eq!(cpu.register_a, 5);
@@ -1193,7 +1202,7 @@ mod test {
 
     #[test]
     fn test_0xaa_tax_move_a_to_x() {
-        let bus = Bus::new(test::test_rom(), true);
+        let bus = Bus::new(test::test_rom(), |ppu, joypad| {}, true);
         let mut cpu = CPU::new(bus);
         cpu.load(vec![0xaa, 0x00]);
         cpu.reset();
@@ -1205,7 +1214,7 @@ mod test {
 
     #[test]
     fn test_5_ops_working_together() {
-        let bus = Bus::new(test::test_rom(), true);
+        let bus = Bus::new(test::test_rom(), |ppu, joypad| {}, true);
         let mut cpu = CPU::new(bus);
         cpu.load_and_run(vec![0xa9, 0xc0, 0xaa, 0xe8, 0x00]);
 
@@ -1214,7 +1223,7 @@ mod test {
 
     #[test]
     fn test_inx_overflow() {
-        let bus = Bus::new(test::test_rom(), true);
+        let bus = Bus::new(test::test_rom(), |ppu, joypad| {}, true);
         let mut cpu = CPU::new(bus);
         cpu.load(vec![0xe8, 0xe8, 0x00]);
         cpu.reset();
@@ -1226,7 +1235,7 @@ mod test {
 
     #[test]
     fn test_lda_from_memory() {
-        let bus = Bus::new(test::test_rom(), true);
+        let bus = Bus::new(test::test_rom(), |ppu, joypad| {}, true);
         let mut cpu = CPU::new(bus);
         cpu.load(vec![0xa5, 0x10, 0x00]);
         cpu.reset();
